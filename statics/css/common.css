@@ -1,0 +1,44 @@
+.move-btn {
+    width: 80px;
+    height: 30px;
+    margin-top: 35px;
+    margin-left: 5px;
+}
+
+.group-select select{
+    width: 150px;
+    height: 200px;
+    border: 4px #A0A0A4 outset;
+    padding: 4px;
+}
+
+.divcss5{
+    word-wrap: break-word;
+}
+
+pre {
+    outline: 1px solid #ccc;
+    padding: 5px;
+    margin: 5px;
+    background-color:#0c0c0c;
+}
+.string { color: green; }
+.number { color: darkorange; }
+.boolean { color: blue; }
+.null { color: magenta; }
+.key { color: red; }
+
+.nojson {
+    /*background-color: #0c0c0c;*/
+    color: #00a65a;
+}
+
+.content {
+    /*background-color:white;*/
+}
+
+.variable-input{
+    width: 260px;
+    height: 35px;
+    margin: 5px;
+}

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{#base.html 中的block content 中的内容将被重写#}
+{% block content %}
+    <script>
+        window.onload=init;
+        function init() {
+            showhide(1);
+        }
+        function showhide() {
+            var box = document.getElementById('navi');
+            box.className='active';
+        }
+    </script>
+    <!-- Main content -->
+    <div class="content-wrapper">
+        <!-- content header (page header) -->
+        <section class="content-header">
+        </section>
+        <!-- main content -->
+        <section>
+            <div class="box-body">
+                {# 如果导航为空就显示添加一个导航              #}
+                {% if not allnavi %}
+                    <a href="{% url 'add' %}">
+                        <span class="btn btn-default">
+                            <b>添加一个导航</b>
+                            <i class="fa fa-plus"></i>
+                        </span>
+                    </a>
+                {% endif %}
+                {# 如果导航不为空就正常显示              #}
+                {% if allnavi %}
+                    {% for navi in allnavi %}
+                        <a href="{{ navi.url }}" target="view_window">
+                            <div class="col-md-3">
+                                <div class="box box-info">
+                                    <div class="box-header with-border">
+                                        <h3 class="box-title">{{ navi.name }}</h3>
+                                    </div>
+                                    <div class="box-body">
+                                        {{ navi.description }}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

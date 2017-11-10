@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!--
+This is a starter template page. Use this page to start your new project from
+scratch. This page gets rid of all links and provides the needed markup only.
+-->
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>ATMS</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+    {% include 'link_css.html' %}
+    {% include 'head_script.html' %}
+{#      self_head_css_js 在此处定义，但是未实现任何功能。在其他地方引用base并且再次block定义self_head_css_js后，可以重写此处block里面的内容  #}
+    {% block self_head_css_js %}
+    {% endblock %}
+
+    <script>
+        $(document).ready(function(){
+        $('.loading').fadeOut();
+        });
+    </script>
+</head>
+<body class="skin-blue sidebar-mini">
+    <div class="loading"></div>
+    <div class="wrapper">
+
+  <!-- Main Header 中使用,并在views中定义-->
+  {% include temp_name %}
+
+    <script type="text/javascript">
+        {#    方法执行 CSS 属性集的自定义动画。 该方法通过CSS样式将元素从一个状态改变为另一个状态。    #}
+    $('.loading').animate({'width':'10%'},50);  //第一个进度节点
+    </script>
+  <!-- Left side column. contains the logo and sidebar -->
+  {% include 'main-sidebar.html' %}
+
+    <script type="text/javascript">
+    $('.loading').animate({'width':'25%'},50);  //第二个进度节点
+    </script>
+  <!-- Content Wrapper. Contains page content -->
+    {% block content %}
+    {% endblock %}
+  <!-- /.content-wrapper -->
+    <script type="text/javascript">
+        $('.loading').animate({'width':'60%'},50);  //第三个进度节点
+    </script>
+      <!-- Main Footer -->
+      {% include 'footer.html' %}
+    <script type="text/javascript">
+        $('.loading').animate({'width':'100%'},50);  //第四个进度节点
+    </script>
+  <!-- Control Sidebar -->
+  {% include 'control-sidebar.html' %}
+
+  <!-- /.control-sidebar -->
+  <!-- Add the sidebar's background. This div must be placed
+       immediately after the control sidebar -->
+  <div class="control-sidebar-bg"></div>
+    </div>
+<!-- ./wrapper -->
+
+</body>
+{#{% block self_footer_js %} {% endblock %}#}
+</html>

@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/statics/layer/layer.js"></script>
+{% endblock %}
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        showhide(2);
+    }
+    function showhide(n) {
+        var box = document.getElementById("case");
+        box.className="active";
+    }
+
+
+</script>
+
+
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="alert alert-info alert-dismissible" style="display: {{ display_control }};">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <h4>{{ tips }}</h4>
+        </div>
+    </section>
+
+    <!-- Main content -->
+
+    <section class="content">
+
+      <!-- Default box -->
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">添加接口</h3>
+
+          <div class="box-tools pull-right">
+{#            <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse" id="Collapse">#}
+{#              <i class="fa fa-minus"></i></button>#}
+            <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove" id="Remove">
+              <i class="fa fa-times"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+      <form action="{% url 'case_add' %}" method="post">
+        {% csrf_token %}
+        {#          <p>#}
+        {#           <label for="id_subject">Subject:</label>#}
+        {#           <input id="id_subject" type="text" name="subject" maxlength="100" />#}
+        {#          </p>#}
+        {# c_form.as_p 表单自动添加显示 单个p标签类似上面注视#}
+{#                {{ c_form.as_p }}#}
+        <div class="form-group">
+           <label class="control-label">
+               {{ c_form.case_name.label_tag }}(必填项)
+
+           </label>
+            <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(1)" data-toggle="tooltip" title="接口名称不能为空"></a>
+             <p id="help_1" style="display: none">(tips: 接口名称不能为空)</p>
+           <div style=" width: 600px">
+               {{ c_form.case_name }}
+           </div>
+
+            {{ c_form.case_name.errors }}
+        </div>
+
+          <div class="form-group">
+           <label class="control-label">
+               {{ c_form.url.label_tag }}(必填项)
+           </label>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(2)" data-toggle="tooltip" title="URL地址要填写完整，记得带上http:// 或者https://"></a>
+             <p id="help_2" style="display: none">(tips: URL地址要填写完整，记得带上http:// 或者https://)</p>
+           <div>
+               {{ c_form.url }}
+           </div>
+            {{ c_form.url.errors }}
+        </div>
+
+          <div class="form-group">
+           <label class="control-label">
+               {{ c_form.case_group.label_tag }}
+           </label>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(3)" data-toggle="tooltip" title="如果无项目分组，请到属组管理中添加您的项目"></a>
+             <p id="help_3" style="display: none">(tips: 如果无项目分组，请到属组管理中添加您的项目)</p>
+
+
+           <div>
+               {{ c_form.case_group }}
+           </div>
+            {{ c_form.case_group.errors }}
+        </div>
+
+          <div class="form-group">
+           <label class="control-label">
+               {{ c_form.request_method.label_tag }}
+           </label>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(4)" data-toggle="tooltip" title="当前只支持GET和POST请求"></a>
+             <p id="help_4" style="display: none">(tips: 当前只支持GET和POST请求)</p>
+           <div>
+               {{ c_form.request_method }}
+           </div>
+            {{ c_form.request_method.errors }}
+        </div>
+
+           <div class="form-group">
+           <label class="control-label">
+               {{ c_form.request_type.label_tag }}
+           </label>
+                <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(5)" data-toggle="tooltip" title="请选择正确的请求类型，不确定的情况下可以尝试默认请求类型"></a>
+             <p id="help_5" style="display: none;">(tips: 请选择正确的请求类型，不确定的情况下可以尝试默认请求类型)</p>
+           <div>
+               {{ c_form.request_type }}
+           </div>
+            {{ c_form.request_type.errors }}
+        </div>
+
+          <div class="form-group">
+           <label class="control-label">
+               {{ c_form.headers.label_tag }}
+           </label>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(6)" data-toggle="tooltip" title='请求头为字典/json类型，可以不用添加content-type，如无特别需要可以不填'></a>
+             <p id="help_6" style="display: none;">(tips: 请求头为字典/json类型，可以不用添加content-type，如无特别需要可以不填)</p>
+
+           <div>
+               {{ c_form.headers }}
+           </div>
+            {{ c_form.headers.errors }}
+        </div>
+
+           <div class="form-group">
+               <label class="control-label">
+                   {{ c_form.params.label_tag }}
+               </label>
+               <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(7)" data-toggle="tooltip" title="请求参数如果为json类型请记得带上 { }，如:{'username':'zhangsan'}"></a>
+                 <p id="help_7" style="display: none;">(tips: 请求参数如果为json类型请记得带上 { }，如：{"username":"zhangsan"})</p>
+               <div >
+                   <button type="button" class="btn btn-default" id="Parameters"  data-toggle="params_json">Parameters</button>
+                   <button type="button" class="btn btn-default" id="Body_Data" onclick="" data-toggle="params_body">Body Data</button>
+                   <div class="params_body" style="display: none" hidden="hidden">
+                       {{ c_form.params }}
+                   </div>
+                   {{ c_form.params }}
+                   <br>
+
+                    <div class="params_json active">
+                       <a action="#" onclick="addRequestParams()" style="font-size: 14px;" >
+                       <i class="fa fa-plus"> Parameters</i>
+
+                   </a>
+                   <div id="urlParameter" name="urlParameter"></div>
+                   </div>
+
+
+
+               </div>
+              {{ c_form.params.errors }}
+           </div>
+
+           <div class="form-group">
+           <label class="control-label">
+               {{ c_form.is_active.label_tag }}
+           </label>
+               <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(8)" data-toggle="tooltip" title="用例一旦被禁用将不会被运行"></a>
+             <p id="help_8" style="display: none;">(tips: 用例一旦被禁用将不会被运行)</p>
+           <div>
+               {{ c_form.is_active }}
+           </div>
+            {{ c_form.is_active.errors }}
+        </div>
+
+          <div class="form-group">
+           <label class="control-label">
+               {{ c_form.expect_res.label_tag }}
+           </label>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(9)" data-toggle="tooltip" title="预期结果可以为空，主要进行结果响应的断言，支持模糊匹配"></a>
+             <p id="help_9" style="display: none;">(tips: 预期结果可以为空，主要进行结果响应的断言，支持模糊匹配)</p>
+           <div>
+               {{ c_form.expect_res }}
+           </div>
+            {{ c_form.expect_res.errors }}
+        </div>
+
+{#          <div class="form-group" >#}
+{#           <label class="control-label">#}
+{#               {{ c_form.duration.label_tag }}#}
+{#           </label>#}
+{#           <div>#}
+{#               {{ c_form.duration }}#}
+{#           </div>#}
+{#            {{ c_form.duration.errors }}#}
+{#        </div>#}
+
+          <div class="form-group">
+           <label class="control-label">
+               {{ c_form.status.label_tag }}
+           </label>
+
+           <div>
+               {{ c_form.status }}
+           </div>
+            {{ c_form.status.errors }}
+        </div>
+
+          <div class="form-group" style='display:none'>
+           <label class="control-label">
+               {{ c_form.fact_res.label_tag }}
+           </label>
+           <div>
+
+                {{ c_form.fact_res }}
+
+
+           </div>
+            {{ c_form.fact_res.errors }}
+        </div>
+
+          <div class="form-group">
+           <label class="control-label">
+               {{ c_form.remark.label_tag }}
+           </label>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(10)" data-toggle="tooltip" title="备注可以为空"></a>
+             <p id="help_10" style="display: none;">(tips: 备注可以为空)</p>
+           <div>
+               {{ c_form.remark }}
+           </div>
+            {{ c_form.remark.errors }}
+        </div>
+
+        <input type="submit" class="btn btn-primary" style="width: 60pt" value="提交" onclick="json2string_input()">&nbsp;
+        <a href="{% url 'case' %}"> <li class="btn btn-primary" style="width: 60pt">返回</li></a>
+{#        &nbsp;&nbsp;<li  id="idc_add" class="btn btn-success" style="width: 60pt" >机房 <i class="fa fa-plus-circle"></i></li>#}
+
+          <br>
+      </form>
+        </div>
+        <!-- /.box-body -->
+        <div class="box-footer">
+          <i class="fa fa-info-circle"></i> 请勿重复添加条目。
+        </div>
+        <!-- /.box-footer-->
+      </div>
+      <!-- /.box -->
+    </section>
+
+  </div>
+<input id="handle_status" value="" hidden="hidden">
+
+<script>
+$('#case_add').on('click', function(){
+    layer.open({
+    type: 2, // 显示content 内容
+    title: '添加接口用例',
+    closeBtn: 1, // 显示关闭按钮
+    area: ['500px', '450px'], // 显示窗口大小
+    shadeClose: true, //点击遮罩关闭
+    content: ['/casemanage/case/add/'],
+    end:function(){
+            var handle_status = $("#handle_status").val();
+            if ( handle_status == '1' ) {
+                layer.msg('提交成功！',{
+                    icon: 1, // 成功按钮
+                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                },function(){
+                    history.go(0); //history.go(1)前进 history.go(0)刷新 history.go(-1)后退
+
+                });
+            } else if ( handle_status == '2' ) {
+                layer.msg('提交失败！',{
+                    icon: 2, // 失败按钮
+                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                },function(){
+                    history.go(0); //history.go(1)前进 history.go(0)刷新 history.go(-1)后退
+                });
+            }
+        }
+  });
+});
+
+// 点击x 后退
+$('#Remove').on('click', function () {
+    //后退
+    history.go(-1);
+});
+
+
+</script>
+
+<script src="/statics/js/common/request.js" type="text/javascript"></script>
+<script type="text/javascript">
+    function json2string_input() {
+        var data={};
+        if($(".paramKey").length){
+            for (var i=0;i<$(".paramKey").length;i++){
+                var key_str = $('.paramKey')[i].value;
+                var value1_str = $('.defaultValue')[i].value;
+                data[key_str] = value1_str;
+            }
+            console.log(data);
+            $("#id_params").val(JSON.stringify(data));
+            }
+        }
+
+</script>
+{% endblock %}
