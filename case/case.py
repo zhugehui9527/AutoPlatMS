@@ -1,11 +1,11 @@
 # -*- coding:utf-8 -*-
 from forms import CaseForm
-from models import Case, CaseGroup, IS_ACTIVE, REQUEST_METHOD, REQUEST_TYPE, RESPONSE_STATUS, RESPONSE_TYPE
+from models import Case, CaseGroup, IS_ACTIVE, REQUEST_METHOD, REQUEST_TYPE, RESPONSE_STATUS, RESPONSE_TYPE, PROTOCOL
 from django.shortcuts import render, HttpResponse, redirect
 from django.db.models import Q
 from api import get_object, get_case, api_request
 from api import pages, str2gb
-import csv, json
+import csv, json , requests
 import demjson
 import datetime
 from django.contrib.auth.decorators import login_required
@@ -27,27 +27,28 @@ def case(request):
     is_active_s = IS_ACTIVE
     status_s = RESPONSE_STATUS
     status = request.GET.get('status', '') # 接口状态:未执行，成功，失败，错误
-    case_name = request.GET.get('case_name', '') # 接口名称
+    # case_name = request.GET.get('case_name', '') # 接口名称
     group_name = request.GET.get('case_group', '') # 从属项目
-    request_type = request.GET.get('request_type', '') # 请求类型
+    # request_type = request.GET.get('request_type', '') # 请求类型
     request_method = request.GET.get('request_method', '') # 请求方法
-    url = request.GET.get('url', '') # 请求URL
-    headers = request.GET.get('headers', '') # 请求头
-    params = request.GET.get('params', '') # 请求参数
+    # ip = request.GET.get('ip', '') # 请求域名
+    # # headers = request.GET.get('headers', '') # 请求头
+    # # params = request.GET.get('params', '') # 请求参数
     is_active = request.GET.get('is_active', '') # 接口是否禁用
-    add_time = request.GET.get('add_time', '') # 添加时间
-    update_time = request.GET.get('update_time', '') # 更新时间
-    expect_res = request.GET.get('expect_res', '') # 预期结果
-    fact_res = request.GET.get('fact_res', '') # 实际结果
+    # # add_time = request.GET.get('add_time', '') # 添加时间
+    # # update_time = request.GET.get('update_time', '') # 更新时间
+    # expect_res = request.GET.get('expect_res', '') # 预期结果
+    # fact_res = request.GET.get('fact_res', '') # 实际结果
     keyword = request.GET.get('keyword', '') # 搜索关键词
     group_id = request.GET.get('group_id', '') # 组id
     export = request.GET.get('export', '') # 导出
-    remark = request.GET.get('remark', '') # 备注
-    duration = request.GET.get('duration', '') # 执行耗时
-    case_id = request.GET.get('case_id', '') # 用例ID
+    # # remark = request.GET.get('remark', '') # 备注
+    # # duration = request.GET.get('duration', '') # 执行耗时
+    # case_id = request.GET.get('case_id', '') # 用例ID
+    # # proxies = request.GET.get('proxies', '')  # 代理
     case_id_all = request.GET.getlist('id', '')
-
-    # 接口列表节目过滤规则
+    # update_index = request.GET.get('index', '')
+    # 接口列表过滤规则
     if group_id:
         group = get_object(CaseGroup, id=group_id)
         if group:
@@ -55,20 +56,16 @@ def case(request):
     else:
         case_find = Case.objects.all()
 
-    # if case_name:
-    #     case_find = case_find.filter(case_name__contains=case_name)
     if group_name:
         case_find = case_find.filter(case_group__name__contains=group_name)
-    # if url:
-    #     case_find = case_find.filter(url__contains=url)
     if is_active:
         case_find = case_find.filter(is_active__exact=is_active)
     if request_method:
         case_find = case_find.filter(request_method__exact=request_method)
     if status:
         case_find = case_find.filter(status__exact=status)
-    if expect_res:
-        case_find = case_find.filter(expect_res__contains=expect_res)
+    # if expect_res:
+    #     case_find = case_find.filter(expect_res__contains=expect_res)
     # if fact_res:
     #     case_find = case_find.filter(fact_res__contains=fact_res)
     # if remark:
@@ -77,7 +74,7 @@ def case(request):
     if keyword:
         case_find = case_find.filter(
             Q(case_name__contains=keyword) |
-            Q(url__contains=keyword) |
+            Q(ip__contains=keyword) |
             Q(case_group__name__contains=keyword) |
             Q(expect_res__contains=keyword) |
             Q(fact_res__contains=keyword) |
@@ -87,8 +84,11 @@ def case(request):
     if export:
         response = create_case_excel(export, case_id_all)
         return response
+
+
+
     # 所有对象， 分页器， 本页对象， 所有页码， 本页页码，是否显示第一页，是否显示最后一页
-    cases_list, p, cases, page_range, current_page, show_first, show_end = pages(case_find, request)
+    all_obj, p, cases, page_range, current_page, show_first, show_end = pages(case_find, request)
     return render(request, 'case/index.html', locals())
 
 
@@ -107,14 +107,17 @@ def create_case_excel(export, case_id_all):
             file_name = 'atms_case_' + now + '.csv'
             response['Content-Disposition'] = "attachment; filename=" + file_name
             writer = csv.writer(response)
-            writer.writerow([str2gb(u'接口名称'), str2gb(u'用例组别'),
-                              str2gb(u'URL'), str2gb(u'请求方法'),
+            writer.writerow([
+
+                              str2gb(u'接口名称'), str2gb(u'用例组别'),
+                              str2gb(u'协议'), str2gb(u'域名'),
+                              str2gb(u'端口'), str2gb(u'路径'),
+                              str2gb(u'请求方法'),
                               str2gb(u'请求头'), str2gb(u'请求参数'),
                               str2gb(u'是否禁用'), str2gb(u'更新时间'),
                               str2gb(u'预期结果'), str2gb(u'实际结果'),
-                              str2gb(u'执行耗时'),
-                             str2gb(u'用例状态'),
-                              str2gb(u'备注信息'),
+                              str2gb(u'执行耗时'), str2gb(u'用例状态'),
+                              str2gb(u'备注信息'), str2gb(u'代理地址'),
                               ])
             for c in case_find:
                 if c.request_method:
@@ -134,13 +137,24 @@ def create_case_excel(export, case_id_all):
                 else:
                     c_status = ''
 
-                writer.writerow([str2gb(c.case_name), str2gb(c.case_group),
-                                  str2gb(c.url), str2gb(c_method),
+                group_obj = CaseGroup.objects.get(name=c.case_group)
+                c_path = c.path
+                c_protocol = PROTOCOL[int(c.protocol)][1] or PROTOCOL[int(group_obj.protocol)][1]
+                print c_protocol
+                c_ip = c.ip or group_obj.ip
+                c_port = c.port or group_obj.port
+                c_proxies = c.proxies or group_obj.proxies
+
+                writer.writerow([
+                                  str2gb(c.case_name), str2gb(c.case_group),
+                                  str2gb(c_protocol), str2gb(c_ip),
+                                  str2gb(c_port), str2gb(c_path),
+                                  str2gb(c_method),
                                   str2gb(c.headers), str2gb(c.params),
                                   str2gb(c_active), str2gb(c.update_time.strftime('%Y-%m-%d %H:%M:%S')),
                                   str2gb(c.expect_res), str2gb(c.fact_res),
-                                  str2gb(c.duration),
-                                 str2gb(c_status), str2gb(c.remark),
+                                  str2gb(c.duration), str2gb(c_status),
+                                  str2gb(c.remark), str2gb(c_proxies),
                                   ])
             return response
 
@@ -153,14 +167,16 @@ def create_case_excel(export, case_id_all):
         file_name = 'atms_case_' + now + '.csv'
         response['Content-Disposition'] = "attachment; filename=" + file_name
         writer = csv.writer(response)
-        writer.writerow([str2gb(u'接口名称'), str2gb(u'用例组别'),
-                         str2gb(u'URL'), str2gb(u'请求方法'),
-                         str2gb(u'请求头'), str2gb(u'请求参数'),
-                         str2gb(u'是否禁用'), str2gb(u'更新时间'),
-                         str2gb(u'预期结果'), str2gb(u'实际结果'),
-                         str2gb(u'执行耗时'),
-                         str2gb(u'用例状态'),
-                         str2gb(u'备注信息'),
+        writer.writerow([
+            str2gb(u'接口名称'), str2gb(u'用例组别'),
+            str2gb(u'协议'), str2gb(u'域名'),
+            str2gb(u'端口'), str2gb(u'路径'),
+            str2gb(u'请求方法'),
+            str2gb(u'请求头'), str2gb(u'请求参数'),
+            str2gb(u'是否禁用'), str2gb(u'更新时间'),
+            str2gb(u'预期结果'), str2gb(u'实际结果'),
+            str2gb(u'执行耗时'), str2gb(u'用例状态'),
+            str2gb(u'备注信息'), str2gb(u'代理地址'),
                          ])
         for c in case_all:
             if c.request_method:
@@ -180,13 +196,24 @@ def create_case_excel(export, case_id_all):
             else:
                 c_status = ''
 
-            writer.writerow([str2gb(c.case_name), str2gb(c.case_group),
-                             str2gb(c.url), str2gb(c_method),
-                             str2gb(c.headers), str2gb(c.params),
-                             str2gb(c_active), str2gb(c.update_time.strftime('%Y-%m-%d %H:%M:%S')),
-                             str2gb(c.expect_res), str2gb(c.fact_res),
-                             str2gb(c.duration),
-                             str2gb(c_status), str2gb(c.remark),
+            group_obj = CaseGroup.objects.get(name=c.case_group)
+            c_path = c.path
+            c_protocol = PROTOCOL[int(c.protocol)][1] or PROTOCOL[int(group_obj.protocol)][1]
+            print c_protocol
+            c_ip = c.ip or group_obj.ip
+            c_port = c.port or group_obj.port
+            c_proxies = c.proxies or group_obj.proxies
+
+            writer.writerow([
+                str2gb(c.case_name), str2gb(c.case_group),
+                str2gb(c_protocol), str2gb(c_ip),
+                str2gb(c_port), str2gb(c_path),
+                str2gb(c_method),
+                str2gb(c.headers), str2gb(c.params),
+                str2gb(c_active), str2gb(c.update_time.strftime('%Y-%m-%d %H:%M:%S')),
+                str2gb(c.expect_res), str2gb(c.fact_res),
+                str2gb(c.duration), str2gb(c_status),
+                str2gb(c.remark), str2gb(c_proxies),
                              ])
         return response
 
@@ -238,10 +265,27 @@ def case_run(request):
     case_id = request.GET.get('id', '')
     res = ()
     headers = {}
+    proxies = {"http": None, "https": None}
     REQUEST_TYPE_DICT = dict(REQUEST_TYPE)
     if case_id:
         case_model = Case.objects.get(id=case_id)
+        group_name = case_model.case_group
         case_is_active = case_model.is_active
+        case_group = CaseGroup.objects.get(name=group_name)
+        path = case_model.path
+
+        protocol = case_model.protocol or case_group.protocol
+        print 'protocol: ', protocol
+        ip = case_model.ip or case_group.ip
+        port = case_model.port or case_group.port
+
+        if protocol == PROTOCOL[2][0]:  # PROTOCOL[2][0] == 2
+            url = str(PROTOCOL[2][1]) + '://' + str(ip) + ':' + str(port) + str(path)
+
+        else:
+            url = str(PROTOCOL[1][1]) + '://' + str(ip) + ':' + str(port) + str(path)
+
+
         # content_type = case_model.content_type
         # case_is_active == 1 启用 ，2 禁用
         if case_is_active == 1:
@@ -252,7 +296,7 @@ def case_run(request):
             elif request_method_int == 2:
                 request_method = 'POST'
 
-            url = case_model.url
+
             request_type = case_model.request_type
             # 更新content-type
             headers['content-type'] = REQUEST_TYPE_DICT[request_type]
@@ -267,10 +311,25 @@ def case_run(request):
                 params = eval(case_model.params)
             except:
                 params = case_model.params
+
+            try:
+                case_proxies = case_model.proxies
+                group_proxies = case_group.proxies
+                if group_proxies:
+                    proxies["http"] = group_proxies
+                    proxies["https"] = group_proxies
+
+                if case_proxies:
+                    proxies["http"] = case_proxies
+                    proxies["https"] = case_proxies
+
+            except:
+                proxies = {}
             # case_model.save()
             try:
                 t1 = datetime.datetime.now()
-                res = api_request(method=request_method, url=url, params=params, headers=headers)
+                s = requests.session()
+                res = api_request(session=s, method=request_method, url=url, params=params, headers=headers, proxies=proxies)
                 res_status, res_response_message, res_rheaders, res_relapsed = res
                 # 更新数据库中的字段，case_model.fact_res = res_response_message 所有字段都会被更新一次
                 # Publisher.objects.filter(id=52).update(res_response_message='Apress Publishing') 只更新res_response_message其他不会被更新
@@ -300,6 +359,18 @@ def case_run(request):
                 request_type = case_model.request_type
                 request_method_int = case_model.request_method
                 case_is_active = case_model.is_active
+                case_group = CaseGroup.objects.get(name=case_model.case_group)
+                path = case_model.path
+                protocol = case_model.protocol or case_group.protocol
+                print 'protocol: ', protocol
+                ip = case_model.ip or case_group.ip
+                port = case_model.port or case_group.port
+
+                if protocol == PROTOCOL[2][0]:  # PROTOCOL[2][0] == 2
+                    url = str(PROTOCOL[2][1]) + '://' + str(ip) + ':' + str(port) + str(path)
+
+                else:
+                    url = str(PROTOCOL[1][1]) + '://' + str(ip) + ':' + str(port) + str(path)
                 # case_is_active == 1 启用 ，2 禁用
                 if case_is_active == 1:
                     if request_method_int == 2:
@@ -308,7 +379,6 @@ def case_run(request):
                     elif request_method_int == 1:
                         request_method = 'GET'
 
-                    url = case_model.url
                     # 更新content-type
                     headers['content-type'] = REQUEST_TYPE_DICT[request_type]
 
@@ -325,8 +395,8 @@ def case_run(request):
 
                     try:
                         t1 = datetime.datetime.now()
-
-                        res = api_request(method=request_method, url=url, params=params, headers=headers)
+                        s = requests.session()
+                        res = api_request(session=s, method=request_method, url=url, params=params, headers=headers)
                         res_status, res_response_message, res_rheaders, res_relapsed = res
                         # json 数据显示格式化
                         # loads = demjson.decode(res_response_message)
@@ -357,6 +427,7 @@ def case_edit(request, ids):
     mod_status = 0
     if request.method.lower() == 'post':
         cf = CaseForm(request.POST, instance=obj)
+
         if cf.is_valid():
             cf.save()
             mod_status = 1

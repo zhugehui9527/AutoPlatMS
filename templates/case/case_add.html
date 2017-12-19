@@ -4,13 +4,19 @@
 {% endblock %}
 {% block content %}
 <script>
+{#    debugger;#}
     window.onload=init;
     function init() {
-        showhide(2);
+         var box = document.getElementById("id_params");
+        box.style.display='none';
     }
-    function showhide(n) {
-        var box = document.getElementById("case");
-        box.className="active";
+    function showhide() {
+        var box = document.getElementById("id_params");
+        if (box.style.display==''){
+            box.style.display='none';
+        }else{
+            box.style.display='';
+        }
     }
 
 
@@ -56,8 +62,7 @@
                {{ c_form.case_name.label_tag }}(必填项)
 
            </label>
-            <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(1)" data-toggle="tooltip" title="接口名称不能为空"></a>
-             <p id="help_1" style="display: none">(tips: 接口名称不能为空)</p>
+            <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="接口名称不能为空"></a>
            <div style=" width: 600px">
                {{ c_form.case_name }}
            </div>
@@ -67,22 +72,53 @@
 
           <div class="form-group">
            <label class="control-label">
-               {{ c_form.url.label_tag }}(必填项)
+               {{ c_form.ip.label_tag }}
            </label>
-              <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(2)" data-toggle="tooltip" title="URL地址要填写完整，记得带上http:// 或者https://"></a>
-             <p id="help_2" style="display: none">(tips: URL地址要填写完整，记得带上http:// 或者https://)</p>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="域名或者ip"></a>
            <div>
-               {{ c_form.url }}
+               {{ c_form.ip }}
            </div>
-            {{ c_form.url.errors }}
+            {{ c_form.ip.errors }}
+        </div>
+
+          <div class="form-group">
+           <label class="control-label">
+               {{ c_form.port.label_tag }}
+           </label>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="请求端口"></a>
+           <div>
+               {{ c_form.port }}
+           </div>
+            {{ c_form.port.errors }}
+        </div>
+
+          <div class="form-group">
+           <label class="control-label">
+               {{ c_form.protocol.label_tag }}
+           </label>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="请求协议"></a>
+           <div>
+               {{ c_form.protocol }}
+           </div>
+            {{ c_form.protocol.errors }}
+        </div>
+
+          <div class="form-group">
+           <label class="control-label">
+               {{ c_form.path.label_tag }}
+           </label>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="接口请求路径：/case/add"></a>
+           <div>
+               {{ c_form.path }}
+           </div>
+            {{ c_form.path.errors }}
         </div>
 
           <div class="form-group">
            <label class="control-label">
                {{ c_form.case_group.label_tag }}
            </label>
-              <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(3)" data-toggle="tooltip" title="如果无项目分组，请到属组管理中添加您的项目"></a>
-             <p id="help_3" style="display: none">(tips: 如果无项目分组，请到属组管理中添加您的项目)</p>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title="如果无项目分组，请到属组管理中添加您的项目"></a>
 
 
            <div>
@@ -95,8 +131,7 @@
            <label class="control-label">
                {{ c_form.request_method.label_tag }}
            </label>
-              <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(4)" data-toggle="tooltip" title="当前只支持GET和POST请求"></a>
-             <p id="help_4" style="display: none">(tips: 当前只支持GET和POST请求)</p>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title="当前只支持GET和POST请求"></a>
            <div>
                {{ c_form.request_method }}
            </div>
@@ -107,8 +142,8 @@
            <label class="control-label">
                {{ c_form.request_type.label_tag }}
            </label>
-                <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(5)" data-toggle="tooltip" title="请选择正确的请求类型，不确定的情况下可以尝试默认请求类型"></a>
-             <p id="help_5" style="display: none;">(tips: 请选择正确的请求类型，不确定的情况下可以尝试默认请求类型)</p>
+                <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title="请选择正确的请求类型，不确定的情况下可以尝试默认请求类型"></a>
+
            <div>
                {{ c_form.request_type }}
            </div>
@@ -119,8 +154,7 @@
            <label class="control-label">
                {{ c_form.headers.label_tag }}
            </label>
-              <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(6)" data-toggle="tooltip" title='请求头为字典/json类型，可以不用添加content-type，如无特别需要可以不填'></a>
-             <p id="help_6" style="display: none;">(tips: 请求头为字典/json类型，可以不用添加content-type，如无特别需要可以不填)</p>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title='请求头为字典/json类型，可以不用添加content-type，如无特别需要可以不填'></a>
 
            <div>
                {{ c_form.headers }}
@@ -132,22 +166,21 @@
                <label class="control-label">
                    {{ c_form.params.label_tag }}
                </label>
-               <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(7)" data-toggle="tooltip" title="请求参数如果为json类型请记得带上 { }，如:{'username':'zhangsan'}"></a>
-                 <p id="help_7" style="display: none;">(tips: 请求参数如果为json类型请记得带上 { }，如：{"username":"zhangsan"})</p>
+               <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="请求参数下面二选一即可，如果为json类型params_body请记得带上 { }，如:{'username':'zhangsan'}"></a>
                <div >
-                   <button type="button" class="btn btn-default" id="Parameters"  data-toggle="params_json">Parameters</button>
-                   <button type="button" class="btn btn-default" id="Body_Data" onclick="" data-toggle="params_body">Body Data</button>
-                   <div class="params_body" style="display: none" hidden="hidden">
+{#                   <button type="button" class="btn btn-default" id="Parameters"  data-toggle="params_json">Parameters</button>#}
+{#                   <button type="button" class="btn btn-default" id="Body_Data" onclick="" data-toggle="params_body">Body Data</button>#}
+                   <div class="params_body" id="id_params_body" >
+                        <button type="button" id="id_params_body_a" class="params-btn" onclick="showhide()"  >
+                       <i class="fa fa-plus"> params_body</i></button>
                        {{ c_form.params }}
                    </div>
-                   {{ c_form.params }}
-                   <br>
 
-                    <div class="params_json active">
-                       <a action="#" onclick="addRequestParams()" style="font-size: 14px;" >
+                    <div class="params_json" id="id_params_json">
+                       <button type="button" id="id_params_json_a" class="params-btn" onclick="json2str()" >
                        <i class="fa fa-plus"> Parameters</i>
 
-                   </a>
+                   </button>
                    <div id="urlParameter" name="urlParameter"></div>
                    </div>
 
@@ -161,8 +194,8 @@
            <label class="control-label">
                {{ c_form.is_active.label_tag }}
            </label>
-               <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(8)" data-toggle="tooltip" title="用例一旦被禁用将不会被运行"></a>
-             <p id="help_8" style="display: none;">(tips: 用例一旦被禁用将不会被运行)</p>
+               <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="用例一旦被禁用将不会被运行"></a>
+
            <div>
                {{ c_form.is_active }}
            </div>
@@ -173,8 +206,8 @@
            <label class="control-label">
                {{ c_form.expect_res.label_tag }}
            </label>
-              <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(9)" data-toggle="tooltip" title="预期结果可以为空，主要进行结果响应的断言，支持模糊匹配"></a>
-             <p id="help_9" style="display: none;">(tips: 预期结果可以为空，主要进行结果响应的断言，支持模糊匹配)</p>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title="预期结果可以为空，主要进行结果响应的断言，支持模糊匹配"></a>
+
            <div>
                {{ c_form.expect_res }}
            </div>
@@ -191,43 +224,55 @@
 {#            {{ c_form.duration.errors }}#}
 {#        </div>#}
 
+{#          <div class="form-group">#}
+{#           <label class="control-label">#}
+{#               {{ c_form.status.label_tag }}#}
+{#           </label>#}
+{##}
+{#           <div>#}
+{#               {{ c_form.status }}#}
+{#           </div>#}
+{#            {{ c_form.status.errors }}#}
+{#        </div>#}
+
+{#          <div class="form-group" style='display:none'>#}
+{#           <label class="control-label">#}
+{#               {{ c_form.fact_res.label_tag }}#}
+{#           </label>#}
+{#           <div>#}
+{##}
+{#                {{ c_form.fact_res }}#}
+{##}
+{##}
+{#           </div>#}
+{#            {{ c_form.fact_res.errors }}#}
+{#        </div>#}
+
           <div class="form-group">
            <label class="control-label">
-               {{ c_form.status.label_tag }}
+               {{ c_form.proxies.label_tag }}
            </label>
+              <a action="" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="代理地址，比如http://10.10.10.10:8888"></a>
 
            <div>
-               {{ c_form.status }}
+               {{ c_form.proxies }}
            </div>
-            {{ c_form.status.errors }}
-        </div>
-
-          <div class="form-group" style='display:none'>
-           <label class="control-label">
-               {{ c_form.fact_res.label_tag }}
-           </label>
-           <div>
-
-                {{ c_form.fact_res }}
-
-
-           </div>
-            {{ c_form.fact_res.errors }}
+            {{ c_form.proxies.errors }}
         </div>
 
           <div class="form-group">
            <label class="control-label">
                {{ c_form.remark.label_tag }}
            </label>
-              <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(10)" data-toggle="tooltip" title="备注可以为空"></a>
-             <p id="help_10" style="display: none;">(tips: 备注可以为空)</p>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="备注可以为空"></a>
+
            <div>
                {{ c_form.remark }}
            </div>
             {{ c_form.remark.errors }}
         </div>
 
-        <input type="submit" class="btn btn-primary" style="width: 60pt" value="提交" onclick="json2string_input()">&nbsp;
+        <input type="submit" class="btn btn-primary" style="width: 60pt" value="提交" onclick="str2json()">
         <a href="{% url 'case' %}"> <li class="btn btn-primary" style="width: 60pt">返回</li></a>
 {#        &nbsp;&nbsp;<li  id="idc_add" class="btn btn-success" style="width: 60pt" >机房 <i class="fa fa-plus-circle"></i></li>#}
 
@@ -247,35 +292,35 @@
 <input id="handle_status" value="" hidden="hidden">
 
 <script>
-$('#case_add').on('click', function(){
-    layer.open({
-    type: 2, // 显示content 内容
-    title: '添加接口用例',
-    closeBtn: 1, // 显示关闭按钮
-    area: ['500px', '450px'], // 显示窗口大小
-    shadeClose: true, //点击遮罩关闭
-    content: ['/casemanage/case/add/'],
-    end:function(){
-            var handle_status = $("#handle_status").val();
-            if ( handle_status == '1' ) {
-                layer.msg('提交成功！',{
-                    icon: 1, // 成功按钮
-                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
-                },function(){
-                    history.go(0); //history.go(1)前进 history.go(0)刷新 history.go(-1)后退
-
-                });
-            } else if ( handle_status == '2' ) {
-                layer.msg('提交失败！',{
-                    icon: 2, // 失败按钮
-                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
-                },function(){
-                    history.go(0); //history.go(1)前进 history.go(0)刷新 history.go(-1)后退
-                });
-            }
-        }
-  });
-});
+{#$('#case_add').on('click', function(){#}
+{#    layer.open({#}
+{#    type: 2, // 显示content 内容#}
+{#    title: '添加接口用例',#}
+{#    closeBtn: 1, // 显示关闭按钮#}
+{#    area: ['500px', '450px'], // 显示窗口大小#}
+{#    shadeClose: true, //点击遮罩关闭#}
+{#    content: ['/casemanage/case/add/'],#}
+{#    end:function(){#}
+{#            var handle_status = $("#handle_status").val();#}
+{#            if ( handle_status == '1' ) {#}
+{#                layer.msg('提交成功！',{#}
+{#                    icon: 1, // 成功按钮#}
+{#                    time: 2000 //2秒关闭（如果不配置，默认是3秒）#}
+{#                },function(){#}
+{#                    history.go(0); //history.go(1)前进 history.go(0)刷新 history.go(-1)后退#}
+{##}
+{#                });#}
+{#            } else if ( handle_status == '2' ) {#}
+{#                layer.msg('提交失败！',{#}
+{#                    icon: 2, // 失败按钮#}
+{#                    time: 2000 //2秒关闭（如果不配置，默认是3秒）#}
+{#                },function(){#}
+{#                    history.go(0); //history.go(1)前进 history.go(0)刷新 history.go(-1)后退#}
+{#                });#}
+{#            }#}
+{#        }#}
+{#  });#}
+{#});#}
 
 // 点击x 后退
 $('#Remove').on('click', function () {
@@ -288,7 +333,7 @@ $('#Remove').on('click', function () {
 
 <script src="/statics/js/common/request.js" type="text/javascript"></script>
 <script type="text/javascript">
-    function json2string_input() {
+    function str2json() {
         var data={};
         if($(".paramKey").length){
             for (var i=0;i<$(".paramKey").length;i++){
@@ -300,6 +345,38 @@ $('#Remove').on('click', function () {
             $("#id_params").val(JSON.stringify(data));
             }
         }
+
+    function json2str() {
+        var id_params = $("#id_params").val();
+
+        var temp_key = new Array();
+        var temp_value = new Array();
+        if(id_params){
+            try{
+                var id_params_json = JSON.parse(id_params);
+            } catch (err){
+                alert("【 params_body 】中须为json数据才能编辑");
+            }
+
+            // 遍历json
+            for (var i in id_params_json){
+                temp_key.push(i);
+                temp_value.push(id_params_json[i]);
+            }
+            //
+            for(var k=0; k< temp_key.length;k++){
+                addRequestParams();
+                $('.paramKey')[k].value = temp_key[k];
+                $('.defaultValue')[k].value = temp_value[k];
+            }
+            $("#id_params_json_a").attr("disabled", true);
+        }else {
+            addRequestParams();
+        }
+
+
+
+    }
 
 </script>
 {% endblock %}

@@ -14,4 +14,6 @@ urlpatterns = [
     url(r'^group/del/$', group.group_del, name='group_del'),
     url(r'^group/edit/(?P<ids>\d+)/$', group.group_edit, name='group_edit'),
     url(r'^group/save/$', group.group_save, name='group_save'),
+    url(r'^api/get_case/$', api.get_case, name='get_case'),
+    url(r'^api/index/update/$', api.update_index, name='update_index'),
 ]

@@ -37,25 +37,29 @@
                   <table class="table table-striped table-bordered" id="dataform">
                       <thead>
                         <tr>
-                            <th>
+                            <th class="nosort">
                                 <input type="checkbox" onclick="checkAll(this, 'item1');" />
                             </th>
+                                    <th>ID</th>
                                     <th>组名</th>
-{#                                    <th>用例数</th>#}
-{#                                    <th>未执行个数</th>#}
-{#                                    <th>成功个数</th>#}
-{#                                    <th>失败个数</th>#}
-{#                                    <th>报错个数</th>#}
+                                    <th>代理</th>
                                     <th>描述</th>
+                                    <th class="nosort">操作</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% if allgroup %}
                                 {% for g in allgroup %}
                                     <tr class="even gradeA">
-                                        <td><input type="checkbox" id="u_id" class="item1" value="{{ g.id }}" name="g_check" /></td>
+                                        <td><input type="checkbox" id="g_id" class="item1" value="{{ g.id }}" name="g_check" /></td>
+                                        <td>{{ g.id }}</td>
                                         <td><a href="#"><li style="list-style-type:none" onclick="return tanchu(this.value)" value="{{ g.id }}"> {{ g.name }}</li></a></td>
+                                        <td>{{ g.proxies }}</td>
                                         <td>{{ g.desc }}</td>
+                                        <td>
+                                            <a ><li onclick="return tanchu(this.value)" value="{{ g.id }}" class="btn btn-sm btn-info" >编辑</li></a>
+                                            <a><li value="{{ g.id }}" class="btn btn-sm btn-danger group_del" >删除</li></a>
+                                        </td>
                                     </tr>
                                 {% endfor %}
                                 {% else %}
@@ -86,21 +90,7 @@ function checkAll(sender, checkClass) {
     }
 }
 </script>
-<script src="/statics/plugins/datatables/jquery.dataTables.min.js"></script>
-<script src="/statics/plugins/datatables/dataTables.bootstrap.min.js"></script>
-<script>
-  $(function () {
-{#    $("#example1").DataTable();#}
-    $('#dataform').DataTable({
-      "paging": true,
-      "lengthChange": true,
-      "searching": true,
-      "ordering": true,
-      "info": true,
-      "autoWidth": true
-    });
-  });
-</script>
+
 <script>
 function checkSubmit() {
     if (!confirm("删除属组会一并删除该属组下面的所有用例，确定删除？")) {
@@ -137,4 +127,20 @@ function tanchu(n){
   });
 }
 </script>
+<script>
+    $('li.group_del').click(function () {
+        var group_id = $(this).val();
+        if (confirm("确定删除?")) {
+            $.ajax({
+                type: "post",
+                data: {id: group_id, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'group_del' %}",
+                success: function () {
+                    parent.location.reload();
+                }
+            });
+        }
+    });
+</script>
+<script type="text/javascript" src="/statics/js/common/paginate.js"></script>
 {% endblock %}

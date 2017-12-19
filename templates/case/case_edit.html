@@ -16,95 +16,139 @@
                         {% csrf_token %}
               <div class="box-body">
 
-                  <div class="form-group">
-                  <label for="URL" class="col-sm-2 control-label">URL:</label>
-                      <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(1)" data-toggle="tooltip" title="记得带上http:// 或者https://"></a>
-                      <p id="help_1" style="display: none; padding-left:20px;">  (tips: URL地址要填写完整，记得带上http:// 或者https://) </p>
-                  <div class="col-sm-10">
-                    {{ cf.url }}
-                  </div>
-                </div>
 
                 <div class="form-group">
                   <label for="case_name" class="col-sm-2 control-label">接口名称:</label>
-                      <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(2)" data-toggle="tooltip" title="接口名称不能为空"></a>
-                      <p id="help_2" style="display: none; padding-left:20px;">  (tips: 接口名称不能为空) </p>
+                      <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title="接口名称不能为空"></a>
                   <div class="col-sm-10">
                       {{ cf.case_name }}
                   </div>
+                    {{ cf.case_name.errors }}
                 </div>
+
+                   <div class="form-group">
+                  <label for="protocol" class="col-sm-2 control-label">协议:</label>
+                      <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title="http或者https"></a>
+
+                  <div class="col-sm-10">
+                    {{ cf.protocol }}
+                  </div>
+                      {{ cf.protocol.errors }}
+                </div>
+
+                  <div class="form-group">
+                  <label for="ip" class="col-sm-2 control-label">域名:</label>
+                      <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title="请填写域名或者IP"></a>
+
+                  <div class="col-sm-10">
+                    {{ cf.ip }}
+                  </div>
+                      {{ cf.ip.errors }}
+                </div>
+
+                  <div class="form-group">
+                  <label for="port" class="col-sm-2 control-label">端口:</label>
+                      <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title="请填写端口"></a>
+
+                  <div class="col-sm-10">
+                    {{ cf.port }}
+                  </div>
+                      {{ cf.port.errors }}
+                </div>
+
+                  <div class="form-group">
+                  <label for="path" class="col-sm-2 control-label">路径:</label>
+                      <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title="路径：／case/add"></a>
+
+                  <div class="col-sm-10">
+                    {{ cf.path }}
+                  </div>
+                      {{ cf.path.errors }}
+                </div>
+
 
                 <div class="form-group">
                   <label for="case_group" class="col-sm-2 control-label">用例组别:</label>
-                      <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(3)" data-toggle="tooltip" title="请至少选择一个所属的项目进行分组"></a>
-                      <p id="help_3" style="display: none; padding-left:20px;">  (tips: 请至少选择一个所属的项目进行分组) </p>
+                      <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title="请至少选择一个所属的项目进行分组"></a>
+
                   <div class="col-sm-10">
                     {{ cf.case_group }}
                   </div>
+                    {{ cf.case_group.errors }}
                 </div>
               <div class="form-group">
                   <label for="request_method" class="col-sm-2 control-label">请求方法:</label>
-                      <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(4)" data-toggle="tooltip" title="当前只支持GET和POST请求"></a>
-                      <p id="help_4" style="display: none; padding-left:20px;">  (tips: 当前只支持GET和POST请求) </p>
+                      <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="当前只支持GET和POST请求"></a>
                   <div class="col-sm-10">
                        {{ cf.request_method }}
                     </div>
+                  {{ cf.request_method.errors }}
                 </div>
+
 {#              <div class="form-group" >#}
 {#                  <label for="update_time" class="col-sm-2 control-label">更新时间:</label>#}
 {#                  {{ obj.update_time|date:"Y-m-d H:i:s"  }}#}
 {#                </div>#}
-{##}
+{#                    {{ obj.update_time.errors }}#}
 {#                  <div class="form-group" >#}
 {#                  <label for="duration" class="col-sm-2 control-label">执行耗时:</label>#}
 {#                  {{ obj.duration }}#}
+{##}
 {#                </div>#}
+{#                   {{ obj.duration.errors }}#}
+
 {#                  <div class="form-group">#}
 {#                      <label for="status" class="col-sm-2 control-label">用例状态:</label>#}
 {#                     <div  class="col-sm-10">#}
 {#                      {{ cf.status }}#}
 {#                         </div>#}
-{##}
+{#                    {{ cf.status.errors }}#}
 {#                </div>#}
+
                   <div class="form-group">
                   <label for="is_active" class="col-sm-2 control-label">是否禁用:</label>
-                      <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(5)" data-toggle="tooltip" title="用例一旦被禁用将不会被运行"></a>
-                      <p id="help_5" style="display: none; padding-left:20px;">  (tips: 用例一旦被禁用将不会被运行) </p>
+                      <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title="用例一旦被禁用将不会被运行"></a>
+
                   <div class="col-sm-10">
                        {{ cf.is_active }}
                     </div>
+                      {{ cf.is_active.errors }}
                 </div>
                   <div class="form-group">
                   <label for="request_type" class="col-sm-2 control-label">请求类型:</label>
-                      <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(6)" data-toggle="tooltip" title="请选择正确的请求类型"></a>
-                      <p id="help_6" style="display: none; padding-left:20px;">  (tips: 请选择正确的请求类型，不确定的情况下可以尝试默认请求类型) </p>
+                      <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title="请选择正确的请求类型"></a>
+
                   <div class="col-sm-10">
                        {{ cf.request_type }}
                     </div>
+                      {{ cf.request_type.errors }}
                 </div>
               <div class="form-group">
                   <label for="headers" class="col-sm-2 control-label">请求头:</label>
-                    <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(7)" data-toggle="tooltip" title="请求头为字典/json类型，可以不用添加content-type，如无特别需要可以不填"></a>
-                      <p id="help_7" style="display: none; padding-left:20px;">  (tips: 请求头为字典/json类型，可以不用添加content-type，如无特别需要可以不填)
+                    <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="请求头为字典/json类型，可以不用添加content-type，如无特别需要可以不填"></a>
+
                   <div class="col-sm-10">
                        {{ cf.headers }}
                     </div>
+                  {{ cf.headers.errors }}
               </div>
               <div class="form-group">
                   <label for="params" class="col-sm-2 control-label">请求参数:</label>
-                  <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(8)" data-toggle="tooltip" title='请求参数如果为json类型请记得带上 { }，如：{"username":"zhangsan"}'></a>
-                      <p id="help_8" style="display: none; padding-left:20px;">  (tips: 请求参数如果为json类型请记得带上 { }，如：{"username":"zhangsan"})
+                  <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title='请求参数如果为json类型请记得带上 { }，如：{"username":"zhangsan"}'></a>
+
                   <div class="col-sm-10">
                        {{ cf.params }}
                     </div>
+                  {{ cf.params.errors }}
               </div>
               <div class="form-group">
                   <label for="expect_res" class="col-sm-2 control-label">预期结果:</label>
-                      <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(9)" data-toggle="tooltip" title='预期结果可以为空，主要进行结果响应的断言，支持模糊匹配'></a>
-                      <p id="help_9" style="display: none; padding-left:20px;">  (tips: 预期结果可以为空，主要进行结果响应的断言，支持模糊匹配)
+                      <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title='预期结果可以为空，主要进行结果响应的断言，支持模糊匹配'></a>
+
                   <div class="col-sm-10">
                        {{ cf.expect_res }}
                     </div>
+                  {{ cf.expect_res.errors }}
               </div>
 
 {#                  <div class="form-group">#}
@@ -112,14 +156,28 @@
 {#                  <div class="col-sm-10">#}
 {#                       {{ cf.fact_res }}#}
 {#                    </div>#}
+{#                      {{ cf.fact_res.errors }}#}
 {#                </div>#}
-                <div class="form-group">
+
+
+                  <div class="form-group">
                   <label for="remark" class="col-sm-2 control-label">备注:</label>
-                    <a action="#" id="help-button" class="fa fa-question-circle-o"  onclick="return showhelp(10)" data-toggle="tooltip" title='备注可以为空'></a>
-                      <p id="help_10" style="display: none; padding-left:20px;">  (tips: 备注可以为空)
+                    <a action="#" id="help-button" class="fa fa-question-circle-o" data-toggle="tooltip" title='备注可以为空'></a>
+
                   <div class="col-sm-10">
                     {{ cf.remark }}
                   </div>
+                      {{ cf.remark.errors }}
+                </div>
+
+
+                  <div class="form-group">
+                  <label for="proxies" class="col-sm-2 control-label">代理地址:</label>
+                    <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title='代理地址，比如：http://10.10.10.10:8888'></a>
+                  <div class="col-sm-10">
+                    {{ cf.proxies }}
+                  </div>
+                      {{ cf.proxies.errors }}
                 </div>
 
 {#                <input type="hidden" name="id" value="{{ obj.id }}">#}
@@ -152,3 +210,4 @@
         }
 
 </script>
+</body>

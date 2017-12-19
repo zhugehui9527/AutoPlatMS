@@ -23,6 +23,13 @@ REQUEST_METHOD = (
 )
 
 
+PROTOCOL = (
+    (0, None),
+    (1, 'http'),
+    (2, 'https'),
+)
+
+
 RESPONSE_TYPE = (
     (1, 'json'),
     (2, 'text'),
@@ -51,16 +58,28 @@ class CaseGroup(models.Model):
     name = models.CharField(u"组名", max_length=30, unique=True)
     # blank 针对表单，允许表单为空，null针对数据库，允许数据库该字段为空
     desc = models.CharField(U"描述", max_length=150, null=True, blank=True)
+    proxies = models.CharField(u"代理", max_length=250, null=True, blank=True)
+    protocol = models.IntegerField(u"协议", choices=PROTOCOL, null=True, default=0)
+    ip = models.CharField(max_length=150, verbose_name="域名", null=True, blank=True)
+    port = models.CharField(max_length=150, verbose_name="端口", null=True, blank=True)
 
     def __unicode__(self):
         return self.name
+
+    # class Meta:
+    #     '''按照属组的名字进行排序'''
+    #     ordering = ['name']
 
 
 class Case(models.Model):
     '''添加一条用例'''
     # csv文件表头名字科通通过verbose_name获取， 数据可以通过queryset语句来获取, Admin中显示的字段名称
-    case_name = models.CharField(max_length=150, verbose_name=u"接口名称", error_messages={'required': u'接口名称不能为空'})
-    url = models.URLField(max_length=600, verbose_name="URL", error_messages={'required': u'请求地址不能为空'})
+
+    case_name = models.CharField(max_length=150,  verbose_name=u"接口名称", error_messages={'required': u'接口名称不能为空'})
+    path = models.CharField(max_length=600, verbose_name="路径", null=True, blank=True)
+    protocol = models.IntegerField(u"协议", choices=PROTOCOL, default=0)
+    ip = models.CharField(max_length=150, verbose_name="域名", null=True, blank=True)
+    port = models.CharField(max_length=150, verbose_name="端口", null=True, blank=True)
     # ForeignKey 多对一,多条用例可以属于一个组,on_delete 外键删除，case_group如果被删除，则将该case_group设置为NULL
     case_group = models.ForeignKey(CaseGroup, verbose_name=u"用例属组", null=True, error_messages={'required': u'请选择一个属组'})
     request_method = models.IntegerField(u"请求方法", choices=REQUEST_METHOD, default=1)
@@ -77,9 +96,16 @@ class Case(models.Model):
     status = models.IntegerField(u"用例状态", choices=RESPONSE_STATUS, default=1)
     request_type = models.IntegerField(u"请求类型", choices=REQUEST_TYPE, default=1)
     remark = models.TextField(u'备注信息', max_length=2048, null=True, blank=True)
+    proxies = models.CharField(u"代理", max_length=250, null=True, blank=True, default='')
+    # NO = models.CharField(u"序号", max_length=250, null=True)
+    NO = models.IntegerField(u"序号", default=0 )
 
     def __unicode__(self):
         return self.case_name
+
+    class Meta:
+        '''按照用例的名字进行排序,倒序只需要加 -'''
+        ordering = ['NO']
 
 
 

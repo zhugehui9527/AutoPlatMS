@@ -9,7 +9,6 @@ from forms import LoginUserForm, ChangePasswordForm, AddUserForm, EditUserForm
 from permission import permission_verify
 
 
-
 def login(request):
     if request.user.is_authenticated():
         return HttpResponseRedirect('/')

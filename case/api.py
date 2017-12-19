@@ -5,6 +5,8 @@ from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.views.decorators.csrf import csrf_exempt
 from lib.common import token_verify
 import requests
+from django.contrib.auth.decorators import login_required
+from accounts.permission import permission_verify
 
 try:
     import json
@@ -36,6 +38,7 @@ def get_object(model, **kwargs):
     else:
         the_object = None
     return the_object
+
 
 def page_list_return(total, current=1):
     '''
@@ -145,7 +148,7 @@ def get_case(request):
             'case_group': case.case_group,
 
             }
-    return HttpResponse(json.dumps({'status': 0, 'message': 'OK','data': data}))
+    return HttpResponse(json.dumps({'status': 0, 'message': 'OK', 'data': data}))
 
 
 @token_verify()
@@ -178,9 +181,12 @@ def get_group(request):
     return HttpResponse(status=403)
 
 
-def api_request( method, url, **kwargs):
+def api_request(session, method, url, **kwargs):
     '''http 接口请求'''
-    r = requests.request(method, url, **kwargs)
+    if method.lower() == 'post':
+        r = session.post(url, **kwargs)
+    else:
+        r = session.get(url, **kwargs)
     status_code = r.status_code
     response_message = r.content
     rheaders = r.headers
@@ -188,8 +194,51 @@ def api_request( method, url, **kwargs):
     return status_code, response_message, rheaders, relapsed
 
 
+@login_required()
+@permission_verify()
+def update_index(request):
+    """ 更新接口的索引"""
+    print "ready request index1"
+    if request.method.lower() == 'post':
+
+        try:
+            print "ready request index2"
+            index = request.GET.get('index', '')
+            print "ready request index: %s" % index
+            case_id = request.POST.get('id', '')
+            print "ready request id: %s " % case_id
 
 
+        except:
+            return HttpResponse('You have no data !')
+
+        try:
+
+            case = Case.objects.get(id=case_id)
+
+            case.NO = int(index)
+            case.save()
+            print "request index success"
+        except:
+            return HttpResponse('no data, please check your case')
+
+        data = {'NO': index,
+                'id': case.id,
+                'name': case.case_name,
+
+                }
+        return HttpResponse(json.dumps({'status': 0, 'message': 'OK', 'data': data}))
+
+
+@login_required()
+@permission_verify()
+def get_case_list(request):
+    if request.method.lower == 'get':
+        try:
+            case = Case.objects.all()
+
+        except:
+            return HttpResponse('no data, please check your cases')
 
 
 

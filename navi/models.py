@@ -7,8 +7,8 @@ from django.db import models
 
 
 class navi(models.Model):
-    name = models.CharField(u"名称", max_length=50)
-    description = models.CharField(u"描述", max_length=50)
+    name = models.CharField(u"名称", max_length=150)
+    description = models.CharField(u"描述", max_length=150)
     url = models.URLField(u'网址')
 
     def __unicode__(self):

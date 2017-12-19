@@ -42,3 +42,22 @@ pre {
     height: 35px;
     margin: 5px;
 }
+
+
+.params-btn {
+    font-size: 14px;
+    color:#0d6aad;
+    width: 120px;
+    text-align:left;
+    padding:2px;
+    margin:2px;
+    border:none;
+    background-color: white
+}
+
+
+div.dataTables_wrapper div.dataTables_paginate{
+    margin: 0;
+    white-space: nowrap;
+    text-align: left;
+}

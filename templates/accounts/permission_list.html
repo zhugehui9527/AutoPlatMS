@@ -3,9 +3,6 @@
 {% block self_head_css_js %}
     <script src="/statics/layer/layer.js"></script>
     <script src="/statics/js/base.js"></script>
-    <script src="/statics/plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="/statics/plugins/datatables/dataTables.bootstrap.min.js"></script>
-    <script src="/statics/plugins/datatables/dataTables.bootstrap.css"></script>
 {% endblock %}
 {% block content %}
     <script>
@@ -44,7 +41,7 @@
                                     <tr>
                                         <th>权限名称</th>
                                         <th>URL</th>
-                                        <th>操作</th>
+                                        <th class="nosort">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -52,7 +49,7 @@
                                         <tr style="font-size: 13px;">
                                             <td>{{ i.name }}</td>
                                             <td>{{ i.url }}</td>
-                                            <td>
+                                            <td class="nosort">
                                                 <a href="{% url "permission_edit" i.id %}">
                                                     <span class="btn btn-sm btn-info">编辑</span>
                                                 </a>
@@ -68,24 +65,11 @@
                         </div>
                     </div>
                 </form>
-            </section>id
+            </section>
     <!-- .content-->
     {# 用于接收user_edit.html中layui子层的传值 #}
     <input id="handle_status" value="" hidden="hidden">
     </div>
-    <script>
-        $(function () {
-            $("#example1").DataTable();
-            $("#dataform").DataTable({
-                "paging":true,
-                "lengthChange":true,
-                "searching":true,
-                "ordering":true,
-                "info":true,
-                "authoWidth":true
-            });
-        })
-    </script>
     <script>
         function tanchu(n) {
             layer.open({
@@ -130,7 +114,10 @@
                     )
                 }
             });
-        })
+        });
+
+
     </script>
+<script type="text/javascript" src="/statics/js/common/paginate.js"></script>
 
 {% endblock %}

@@ -9,7 +9,10 @@ from .models import Case
 class CaseAdmin(admin.ModelAdmin):
     list_display = [
         'case_name',
-        'url',
+        'protocol',
+        'ip',
+        'port',
+        'path',
         'case_group',
         'request_method',
         'headers',
@@ -24,7 +27,7 @@ class CaseAdmin(admin.ModelAdmin):
         'duration',
         'status',
         'remark',
-
+        'proxies',
     ]
 
 admin.site.register(Case, CaseAdmin)

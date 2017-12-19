@@ -17,12 +17,17 @@ from django.conf.urls import url, include
 from django.contrib import admin
 import views
 
+
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('accounts.urls')),
     url(r'^navi/', include('navi.urls')),
     url(r'^casemanage/', include('case.urls')),
+    url(r'^jobs/', include('job.urls')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    # url(r'^login/$', 'django.contrib.auth.views.login'),
+
+    # url(r'^404/', views.empty_view, name='404'),
+    # url(r'^login/$', include('django.contrib.auth.views.login')),
+
 ]

@@ -9,8 +9,10 @@ https://docs.djangoproject.com/en/1.11/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.11/ref/settings/
 """
-
+from __future__ import absolute_import
 import os
+import djcelery
+from celery import platforms
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,7 +27,7 @@ SECRET_KEY = 'g2b0(p=0e%kvqqha#gmqu!u_o0u8#vlhpzzinh5jr6(2@g0p-h'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['10.180.144.2','127.0.0.1',]
+ALLOWED_HOSTS = ['127.0.0.1',]
 
 
 # Application definition
@@ -37,11 +39,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_results',
+    'django_celery_beat',
+    'job',
     'accounts',
     'navi',
     'cmdb',
     'case',
+    'monitor',
     'rest_framework',
+    'djcelery',
+    # 'kombu.transport.redis',
+
 ]
 
 # AUTH_USER_MODEL = 'users.User'
@@ -111,12 +120,23 @@ WSGI_APPLICATION = 'AutoPlatMS.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'atms',
+            'USER': 'root',
+            'PASSWORD': '123456',
+            'HOST': '127.0.0.1',
+            'PORT': '3306',
+        }
     }
-}
 
 
 # Password validation
@@ -170,11 +190,15 @@ STATICFILES_DIRS = (
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAuthenticated', # all view auth
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.TokenAuthentication', # for restful service
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser', # for json parser
     )
+
 }
 
 AUTH_USER_MODEL = 'accounts.UserInfo'
@@ -194,3 +218,15 @@ LOGGING = {
         },
     },
 }
+
+
+platforms.C_FORCE_ROOT = True
+
+BROKER_URL = 'redis://localhost:6379/0'
+BROKER_TRANSPORT = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'

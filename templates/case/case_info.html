@@ -20,19 +20,50 @@
                         {% csrf_token %}
               <div class="box-body">
 
-                  <div class="form-group">
-                  <label for="URL" class="control-label">接口URL:</label>
-
-                  <div class="divcss5">
-                     {{ obj.url }}
-                  </div>
-                </div>
 
                 <div class="form-group">
                   <label for="case_name" class="control-label">接口名称:</label>
 
 {#                  <div class="divcss5">#}
                       {{ obj.case_name }}
+{#                  </div>#}
+                </div>
+
+              <div class="form-group">
+                  <label for="protocol" class="control-label">接口协议:</label>
+                    {% ifequal obj.protocol 0 %}
+                          None
+                       {% endifequal %}
+                   {% ifequal obj.protocol 1 %}
+                          http
+                       {% endifequal %}
+                    {% ifequal obj.protocol 2 %}
+                          https
+                       {% endifequal %}
+                </div>
+
+
+              <div class="form-group">
+                  <label for="ip" class="control-label">接口域名:</label>
+
+{#                  <div class="divcss5">#}
+                      {{ obj.ip }}
+{#                  </div>#}
+                </div>
+
+              <div class="form-group">
+                  <label for="port" class="control-label">接口端口:</label>
+
+{#                  <div class="divcss5">#}
+                      {{ obj.port }}
+{#                  </div>#}
+                </div>
+
+              <div class="form-group">
+                  <label for="path" class="control-label">接口路径:</label>
+
+{#                  <div class="divcss5">#}
+                      {{ obj.path }}
 {#                  </div>#}
                 </div>
 
@@ -294,6 +325,14 @@
                        {{ obj.response_code }}
 {#                    </div>#}
                 </div>
+
+               <div class="form-group">
+                  <label for="proxies" class="control-label">代理:</label>
+{#                  <div class="divcss5">#}
+                       {{ obj.proxies }}
+{#                    </div>#}
+                </div>
+
                 <div class="form-group">
                   <label for="remark" class="control-label">备注:</label>
                   <div class="divcss5" >

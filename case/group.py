@@ -5,6 +5,7 @@ from models import Case, CaseGroup
 from forms import GroupForm, CaseForm
 from django.contrib.auth.decorators import login_required
 from accounts.permission import permission_verify
+from api import get_object
 
 
 @login_required()
@@ -42,21 +43,20 @@ def group_add(request):
 @login_required()
 @permission_verify()
 def group_edit(request, ids):
-    obj = CaseGroup.objects.get(id=ids)
+    obj = get_object(CaseGroup, id=ids)
     allgroup = CaseGroup.objects.all()
     unselect = Case.objects.filter(case_group__name=None)
     members = Case.objects.filter(case_group__name=obj.name)
-
-    # cases_not_run = Case.objects.filter(case_group__name=obj.name).filter(status=1)
-    # cases_success = Case.objects.filter(case_group__name=obj.name).filter(status=2)
-    # cases_fail = Case.objects.filter(case_group__name=obj.name).filter(status=3)
-    # cases_error = Case.objects.filter(case_group__name=obj.name).filter(status=4)
-    # cases_num = len(members)
-    # cases_not_run_num = len(cases_not_run)
-    # cases_success_num = len(cases_success)
-    # cases_fail_num = len(cases_fail)
-    # cases_error_num = len(cases_error)
-
+    mod_status = 0
+    if request.method == 'POST':
+        group_form = GroupForm(request.POST, instance=obj)
+        if group_form.is_valid():
+            group_form.save()
+            mod_status = 1
+        else:
+            mod_status = 2
+    else:
+        group_form = GroupForm(instance=obj)
     return render(request, 'case/group_edit.html', locals())
 
 
@@ -64,15 +64,19 @@ def group_edit(request, ids):
 @permission_verify()
 def group_del(request):
     temp_name = 'case/case-header.html'
+
     if request.method == 'POST':
         group_items = request.POST.getlist('g_check', [])
+        group_id = request.POST.get("id", "")
+        if group_id:
+            CaseGroup.objects.get(id=group_id).delete()
         if group_items:
             for n in group_items:
                 CaseGroup.objects.filter(id=n).delete()
     allgroup = CaseGroup.objects.all()
     return render(request, 'case/group.html', locals())
 
-@login_required()
+#
 @permission_verify()
 def group_save(request):
     temp_name = 'case/case-header.html'
@@ -81,6 +85,10 @@ def group_save(request):
         group_id = request.POST.get('id')
         name = request.POST.get('name')
         desc = request.POST.get('desc')
+        proxies = request.POST.get('proxies')
+        port = request.POST.get('port')
+        ip = request.POST.get('ip')
+        protocol = request.POST.get('protocol')
         members = request.POST.getlist('members', [])
         unselect = request.POST.getlist('unselect', [])
         group_item = CaseGroup.objects.get(id=group_id)
@@ -96,6 +104,11 @@ def group_save(request):
                 obj.save()
         group_item.name = name
         group_item.desc = desc
+        group_item.proxies = proxies
+        print group_item.proxies
+        group_item.ip = ip
+        group_item.port = port
+        group_item.protocol = protocol
         group_item.save()
         obj = group_item
         mod_status = 1

@@ -135,7 +135,7 @@ class RoleListForm(forms.ModelForm):
         model = RoleList
         exclude = ('id', )
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '请输入角色名称'}),
             'permission': forms.SelectMultiple(attrs={'class': 'form-control',
                                                       'size': '10',
                                                       'multiple': 'multiple'
@@ -189,8 +189,8 @@ class PermissionListForm(forms.ModelForm):
         model = PermissionList
         exclude = ('id', )
         widgets = {
-            "name": forms.TextInput(attrs={'class': 'form-control'}),
-            'url': forms.TextInput(attrs={'class': 'form-control'}),
+            "name": forms.TextInput(attrs={'class': 'form-control', 'style': 'width:500px;', 'placeholder': '请输入名称' }),
+            'url': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:500px;', 'placeholder': '地址添加如： /accounts/permission/add/'}),
         }
 
     def __init__(self, *args, **kwargs):
