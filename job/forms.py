@@ -8,8 +8,9 @@ from django.utils.translation import ugettext_lazy as _
 from celery import current_app
 from celery.utils import cached_property
 from kombu.utils.json import loads
+from djcelery.models import PeriodicTask, IntervalSchedule, CrontabSchedule, TaskState
+# from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
 
-from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
 from django_celery_results.models import TaskResult
 
 try:
@@ -99,7 +100,6 @@ class PeriodicTaskForm(forms.ModelForm):
             'last_run_at': forms.DateTimeInput(attrs={'class': 'form-control', 'style': 'width:450px;'}),
         }
 
-
     def clean(self):
         data = super(PeriodicTaskForm, self).clean()
         regtask = data.get('regtask')
@@ -107,7 +107,7 @@ class PeriodicTaskForm(forms.ModelForm):
             data['task'] = regtask
         if not data['task']:
             exc = forms.ValidationError(_('please input name of task'))
-            self._errors['task'] = self.error_class(exc.message)
+            self._errors['task'] = self.error_class(exc.messages)
             raise exc
         return data
 
@@ -116,7 +116,7 @@ class PeriodicTaskForm(forms.ModelForm):
         try:
             loads(value)
         except ValueError as exc:
-            raise forms.ValidationError(_('Unable to parse Json: %s' % exc))
+            raise forms.ValidationError(_('Unable to parse Json: %s' % exc),)
         return value
 
     def clean_args(self):
@@ -125,11 +125,13 @@ class PeriodicTaskForm(forms.ModelForm):
     def clean_kwargs(self):
         return self._clean_json('kwargs')
 
+
 class IntervalForm(forms.ModelForm):
     '''间隔周期表单'''
     class Meta:
         model = IntervalSchedule
         exclude = ('id', )
+
 
 class CrontabForm(forms.ModelForm):
     '''周期表单'''
@@ -137,8 +139,10 @@ class CrontabForm(forms.ModelForm):
         model = CrontabSchedule
         exclude = ('id', )
 
+
 class TaskResultForm(forms.ModelForm):
     '''任务结果表单'''
     class Meta:
         model = TaskResult
-        exclude = ('id', )
+        exclude = ('id',)
+

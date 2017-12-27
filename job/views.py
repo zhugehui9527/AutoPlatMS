@@ -2,11 +2,11 @@ from django.shortcuts import render, HttpResponse
 
 # Create your views here.
 
-from job import tasks
+from tasks import add
 
 
 def task_test(request):
-    res = tasks.add.delay(228, 24)
+    res = add.delay(228, 24)
     print("start running task")
     print("async task res", res.get())
 

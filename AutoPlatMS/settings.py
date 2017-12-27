@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 Django settings for AutoPlatMS project.
 
@@ -11,7 +12,6 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 from __future__ import absolute_import
 import os
-import djcelery
 from celery import platforms
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -27,20 +27,14 @@ SECRET_KEY = 'g2b0(p=0e%kvqqha#gmqu!u_o0u8#vlhpzzinh5jr6(2@g0p-h'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1',]
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', ]
 
 
+# to get root privilege
+platforms.C_FORCE_ROOT = True
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django_celery_results',
-    'django_celery_beat',
     'job',
     'accounts',
     'navi',
@@ -48,10 +42,21 @@ INSTALLED_APPS = [
     'case',
     'monitor',
     'rest_framework',
-    'djcelery',
-    # 'kombu.transport.redis',
+    'django_celery_results',
+    # 'django_celery_beat',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
 
 ]
+
+INSTALLED_APPS += ("djcelery", )
+import djcelery
+djcelery.setup_loader()
+
 
 # AUTH_USER_MODEL = 'users.User'
 # USERS_REGISTRATION_OPEN = True
@@ -219,14 +224,25 @@ LOGGING = {
     },
 }
 
+# 参考配置：http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-beat_scheduler
+# http://docs.celeryproject.org/en/latest/django/first-steps-with-django.html
+# 结果需要存储到数据库中 'django-db'
 
-platforms.C_FORCE_ROOT = True
-
-BROKER_URL = 'redis://localhost:6379/0'
-BROKER_TRANSPORT = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis'
-CELERY_ACCEPT_CONTENT = ['application/json']
+# BROKER_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'django-db'
+ELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = TIME_ZONE
-CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+# 'Asia/Shanghai' 时区严重影响定时任务执行，
+# 时区为UTC或者Europe/London执行速度过快
+# CELERY_ENABLE_UTC = False
+# CELERY_TIMEZONE = 'Europe/London'
+# 定义每个worker执行多少个任务后才会自我销毁重建
+CELERY_MAX_TASKS_PER_CHILD = 4
+# # 调用数据库计划任务
+# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+# 使用djcelery 后的配置celery
+CELERY_BEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+CELERY_LOG_LEVEL = 'INFO'
+

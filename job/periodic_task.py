@@ -1,8 +1,19 @@
-from celery_init import Celery
-from celery_init.schedules import crontab
+from celery import Celery
+from celery.schedules import crontab
+from celery.utils.log import get_task_logger
 
-app = Celery(broker='redis://localhost:6379')
+logger = get_task_logger(__name__)
 
+app = Celery()
+
+
+app.conf.update(
+    task_serializer='json',
+    accept_content=['json'],  # Ignore other content
+    result_serializer='json',
+    timezone='Asia/Shanghai',
+    enable_utc=True,
+)
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
@@ -21,4 +32,4 @@ def setup_periodic_tasks(sender, **kwargs):
 
 @app.task
 def test(arg):
-    print(arg)
+    logger.info("arg got: %r", arg)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render, redirect
-from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
+# from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
+from djcelery.models import PeriodicTask, IntervalSchedule, CrontabSchedule
 from django_celery_results.models import TaskResult
 from django.contrib.auth.decorators import login_required
 from accounts.permission import permission_verify
@@ -16,8 +17,8 @@ def index(request):
     temp_name = 'jobs/job_header.html'
     # 所有temp_name 会在base.html中被调用{% include temp_name %}
     jobs_info = PeriodicTask.objects.all()
-
     return render(request, 'jobs/job_list.html', locals())
+
 
 @login_required
 @permission_verify()
@@ -35,6 +36,7 @@ def job_edit(request, ids):
         form = PeriodicTaskForm(instance=obj)
 
     return render(request, 'jobs/job_edit.html', locals())
+
 
 @login_required
 @permission_verify()
@@ -113,6 +115,7 @@ def job_interval_del(request):
     interval_info = IntervalSchedule.objects.all()
     return render(request, "jobs/job_interval_list.html", locals())
 
+
 @login_required
 @permission_verify()
 def job_interval_edit(request, ids):
@@ -126,7 +129,6 @@ def job_interval_edit(request, ids):
             edit_status = 1
         else:
             edit_status = 2
-
     else:
         form = IntervalForm(instance=obj)
 
@@ -141,6 +143,7 @@ def job_crontab_list(request):
     crontab_info = CrontabSchedule.objects.all()
 
     return render(request, 'jobs/job_crontab_list.html', locals())
+
 
 @login_required
 @permission_verify()
@@ -162,6 +165,7 @@ def job_crontab_add(request):
         c_form = CrontabForm()
     return render(request, "jobs/job_crontab_add.html", locals())
 
+
 @login_required
 @permission_verify()
 def job_crontab_edit(request, ids):
@@ -181,6 +185,7 @@ def job_crontab_edit(request, ids):
 
     return render(request, 'jobs/job_crontab_edit.html', locals())
 
+
 @login_required
 @permission_verify()
 def job_crontab_del(request):
@@ -194,13 +199,14 @@ def job_crontab_del(request):
     return render(request, "jobs/job_crontab_list.html", locals())
 
 
-
 @login_required
 @permission_verify()
 def job_result_list(request):
     temp_name = 'jobs/job_header.html'
     # 所有temp_name 会在base.html中被调用{% include temp_name %}
-    result_info = TaskResult.objects.all()
+    # result_info = TaskResult.objects.all()
+    # order_by 加 - 倒序排列
+    result_info = TaskResult.objects.all().order_by('-date_done')
 
     return render(request, 'jobs/job_result_list.html', locals())
 
@@ -212,6 +218,7 @@ def job_result_edit(request, ids):
     obj = get_object(TaskResult, id=ids)
 
     if request.method.lower() == 'post':
+        # form = TaskResultForm(request.POST, instance=obj)
         form = TaskResultForm(request.POST, instance=obj)
         if form.is_valid():
             form.save()
@@ -224,16 +231,17 @@ def job_result_edit(request, ids):
 
     return render(request, 'jobs/job_result_edit.html', locals())
 
+
 @login_required
 @permission_verify()
 def job_result_del(request):
     temp_name = "jobs/job_header.html"
     if request.method == 'POST':
-        crontab = request.POST.getlist('tid_check',[])
-        if crontab:
-            for tid in crontab:
-                TaskResult.objects.filter(id=tid).delete()
-    crontab_info = TaskResult.objects.all()
+        results = request.POST.getlist('tid_check', [])
+        if results:
+            for res in results:
+                TaskResult.objects.filter(id=res).delete()
+    result_info = TaskResult.objects.all()
     return render(request, "jobs/job_result_list.html", locals())
 
 
@@ -262,7 +270,7 @@ def job_backend(request):
 @permission_verify()
 def job_backend_task(request, name, action):
     """
-       cmd1 = celery beat  -l info -b redis://localhost:6370
+       cmd1 = celery beat   -A AutoPlatMS -l info
        cmd2 = celery worker -A AutoPlatMS --loglevel=info
     """
     # cmd = name+" "+action+" -l info -b redis://localhost:6370"
@@ -271,26 +279,26 @@ def job_backend_task(request, name, action):
         'start': celery +' multi start w1 -E --pidfile=/var/run/celery/%n.pid --logfile=/var/log/celery/%n%I.log',
         'stop': celery +" multi stop w1 -E --pidfile=/var/run/celery/%n.pid",
         'restart': celery +" multi restart w1 -E --pidfile=/var/run/celery/%n.pid --logfile=/var/log/celery/%n%I.log",
-        'stopwait': celery +" multi stopwait w1 -E --pidfile=/var/run/celery/%n.pid",
+        # 'stopwait': celery +" multi stopwait w1 -E -A AutoPlatMS --pidfile=/var/run/celery/%n.pid",
     }
 
     if name.lower() == 'worker':
         cmd = worker_dict[action]
     elif name.lower() == 'beat':
         if action.lower() == 'start':
-            cmd = celery +' beat -s /var/run/celery/beat-schedule --detach --pidfile=/var/run/celery/beat.pid'
+            cmd = celery +' beat -A AutoPlatMS --pidfile=/var/run/celery/beat.pid --detach '
         elif action.lower() == 'stop':
-            cmd = "pkill -9 -f 'celery beat' & rm -rf /var/run/celery/beat.pid"
+            cmd = "pkill -9 -f 'celery beat' && rm -rf /var/run/celery/beat.pid"
 
         elif action.lower() == 'restart':
-            cmd = "pkill -9 -f 'celery beat' & rm -rf /var/run/celery/beat.pid & " + celery \
-                  +" beat -s /var/run/celery/beat-schedule --detach --pidfile=/var/run/celery/beat.pid"
+            cmd = "pkill -9 -f 'celery beat' && rm -rf /var/run/celery/beat.pid && " + celery \
+                  +" beat -A AutoPlatMS --pidfile=/var/run/celery/beat.pid --detach"
     print cmd
     r = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
     rc = r.communicate()
     print rc[0]
     time.sleep(3)
-    cmd2 = 'ls -l /var/run/celery'
+    cmd2 = 'whoami'
     r1 = Popen(cmd2, stdout=PIPE, stderr=PIPE, shell=True)
     rc1 = r1.communicate()
     print rc1[0]
