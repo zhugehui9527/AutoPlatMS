@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load mytags %}
+{% block self_head_css_js %}
+    <script src="/statics/js/jquery-ui-1.12.1.min.js"></script>
+    <script src="/statics/layer/layer.js"></script>
+    <script src="/statics/js/base.js"></script>
+    {#    图标选择 ：https://adminlte.io/themes/AdminLTE/pages/UI/icons.html#}
+    <link rel="stylesheet" href="/statics/ionicons/css/ionicons.min.css">
+
+    <link rel="stylesheet" href="/statics/dist/css/AdminLTE.min.css">
+
+{% endblock %}
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        showhide(2);
+    }
+    function showhide(n) {
+
+        var box = document.getElementById("dashboard");
+        box.className="active";
+    }
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+
+        <h1><small>概况</small></h1>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <!-- Small boxes (Stat box) -->
+      <div class="row">
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-aqua">
+            <div class="inner">
+              <h3>{{ case_group_all }}</h3>
+
+              <p>用例集合数</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-ios-albums"></i>
+            </div>
+            <a href="{% url 'group'  %}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-green">
+            <div class="inner">
+              <h3>{{ case_api_all }}</h3>
+
+              <p>接口总数</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-android-document"></i>
+            </div>
+            <a href="{% url 'case'  %}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-yellow">
+            <div class="inner">
+              <h3>{{ mock_group_all }}</h3>
+
+              <p>MOCK集合数</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-ios-albums"></i>
+            </div>
+            <a href="{% url 'mock_group_index'  %}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-red">
+            <div class="inner">
+              <h3>{{ mock_api_all }}</h3>
+
+              <p>MOCK接口总数</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-android-document"></i>
+            </div>
+            <a href="{% url 'mock_index'  %}" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+
+        <!-- ./col -->
+      </div>
+      <!-- /.row -->
+      <!-- Main row -->
+      <div class="row">
+        <!-- Left col -->
+        <section class="col-lg-7 connectedSortable ui-sortable">
+          <!-- Custom tabs (Charts with tabs)-->
+
+          <!-- /.nav-tabs-custom -->
+
+          <!-- /.box -->
+
+
+        </section>
+        <!-- right col -->
+      </div>
+      <!-- /.row (main row) -->
+
+</section>
+
+</div>
+
+{% endblock %}

@@ -1,8 +1,21 @@
 {% extends 'base.html' %}
+{% load mytags %}
 {% block self_head_css_js %}
     <script src="/statics/layer/layer.js"></script>
 {% endblock %}
 {% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        showhide(2);
+    }
+    function showhide(n) {
+        var box = document.getElementById("job_list");
+        box.className="active";
+        var job_manager = document.getElementById("job_manager");
+        job_manager.className="active";
+    }
+</script>
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
@@ -14,10 +27,10 @@
              <a href="{% url 'job_list' %}"><li class="btn btn-default .btn-flat active"><b>任务列表</b></li></a>
         </div>
         <div class="btn-group btn-group-lg">
-             <a href="{% url 'job_interval_list' %}"><li class="btn btn-default .btn-flat" ><b>Interval</b></li></a>
+             <a href="{% url 'job_interval_list' %}"><li class="btn btn-default .btn-flat" ><b>定时间隔</b></li></a>
         </div>
         <div class="btn-group btn-group-lg">
-             <a href="{% url 'job_crontab_list' %}"><li class="btn btn-default .btn-flat" ><b>Crontab</b></li></a>
+             <a href="{% url 'job_crontab_list' %}"><li class="btn btn-default .btn-flat" ><b>定时周期</b></li></a>
         </div>
         <div class="btn-group btn-group-lg">
              <a href="{% url 'job_result_list' %}"><li class="btn btn-default .btn-flat" ><b>任务结果</b></li></a>
@@ -45,12 +58,12 @@
                             </th>
                                     <th>job名称</th>
                                     <th>task名称</th>
+                                    <th>启用状态</th>
                                     <th>任务状态</th>
-                                    <th>任务指令</th>
                                     <th>上次运行</th>
                                     <th>运行次数</th>
                                     <th>上次修改</th>
-                                    <th>过期时间</th>
+                                    <th>最新报告</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -59,8 +72,9 @@
                                     <tr class="even gradeA">
                                         <td><input type="checkbox" id="u_id" class="item1" value="{{ job.id }}" name="jid_check" /></td>
                                         <td><a href="#"><li style="list-style-type:none" onclick="return tanchu(this.value)" value="{{ job.id }}"> {{ job.name }}</li></a></td>
-                                        <td>{{ job.task }}</td>
 
+
+                                        <td class="job_task">{{ job.task }}</td>
                                         <td>
                                             {% if job.enabled %}
                                              <span class="label label-success">启用</span>
@@ -68,11 +82,12 @@
                                                 <span class="label label-default">禁用</span>
                                             {% endif %}
                                         </td>
-                                        <td>{{ job.kwargs }}</td>
+                                    <td class='job_state'><button type="button" id="job_state_li_{{ job.name }}" onclick="return getTaskState(this.value)" value="{{ job.name }}">点击查看</button></td>
                                         <td>{{ job.last_run_at |date:"Y-m-d H:i:s" }}</td>
                                         <td>{{ job.total_run_count }}</td>
                                         <td>{{ job.date_changed |date:"Y-m-d H:i:s" }}</td>
-                                        <td>{{ job.expires |date:"Y-m-d H:i:s"  }}</td>
+{#                                        <td>{{ job.expires |date:"Y-m-d H:i:s"  }}</td>#}
+                                    <td><a href="{% url 'get_latest_report' job.id %}">报告</a> </td>
                                     </tr>
                                 {% endfor %}
                                 {% else %}
@@ -88,20 +103,46 @@
         </form>
 
     </section>
-        <!-- /.content -->
-{#用于接收job_edit.html中layui子层的传值#}
-<input id="handle_status" value="" hidden="hidden">
-      </div>
-    <script>
-function checkAll(sender, checkClass) {
-    var checkItems = document.getElementsByTagName('input');
-    for (var i = 0; i < checkItems.length; i++) {
-        var checkItem = checkItems[i];
-        if (checkItem.type === 'checkbox' && checkItem.className === 'item1') {
-            checkItem.checked = sender.checked;
+            <!-- /.content -->
+    {#用于接收job_edit.html中layui子层的传值#}
+    <input id="handle_status" value="" hidden="hidden">
+</div>
+
+<script>
+    function getTaskState(name) {
+        var taskstate = document.getElementById("job_state_li_"+name);
+            $.ajax({
+                        type: "get",
+                        {#  data: { csrfmiddlewaretoken: '{{ csrf_token }}'},#}
+                        url: "{% url 'get_job_state' %}?name="+name,
+                        success: function (result) {
+
+                            var cc = JSON.parse(result);
+
+                                if(cc.code == 0){
+                                    console.log(cc.taskname+":"+cc.taskstate);
+                                    console.log('taskname:'+cc.taskname);
+                                    taskstate.innerText = cc.taskstate;
+                            }else {
+                                taskstate.innerText = 'None';
+                                }
+
+
+                        }
+                    });
+    }
+
+</script>
+<script>
+    function checkAll(sender, checkClass) {
+        var checkItems = document.getElementsByTagName('input');
+        for (var i = 0; i < checkItems.length; i++) {
+            var checkItem = checkItems[i];
+            if (checkItem.type === 'checkbox' && checkItem.className === 'item1') {
+                checkItem.checked = sender.checked;
+            }
         }
     }
-}
 </script>
 
 <script>

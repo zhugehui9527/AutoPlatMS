@@ -55,6 +55,17 @@ pre {
     background-color: white
 }
 
+.headers-btn{
+    font-size: 14px;
+    color:#0d6aad;
+    width: 120px;
+    text-align:left;
+    padding:2px;
+    margin:2px;
+    border:none;
+    background-color: white
+}
+
 
 div.dataTables_wrapper div.dataTables_paginate{
     margin: 0;

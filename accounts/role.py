@@ -1,10 +1,13 @@
 # -*- coding:utf-8 -*-
-from django.core.urlresolvers import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from forms import RoleListForm
-from models import RoleList
+from .forms import RoleListForm
+from .models import RoleList
 from accounts.permission import permission_verify
 
 

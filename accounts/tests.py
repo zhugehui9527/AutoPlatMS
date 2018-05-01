@@ -4,4 +4,8 @@ from __future__ import unicode_literals
 from django.test import TestCase
 
 # Create your tests here.
-print complex(1,2)
+import os
+
+output = os.popen('celery --version').read()
+
+print(output)

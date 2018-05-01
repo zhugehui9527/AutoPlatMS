@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.shortcuts import render,HttpResponse
 from .models import navi
-from forms import navi_form
+from .forms import navi_form
 from django.contrib.auth.decorators import login_required
 from accounts.permission import permission_verify
 

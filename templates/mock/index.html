@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load mytags %}
+{% block self_head_css_js %}
+    <script src="/statics/js/jquery-ui-1.12.1.min.js"></script>
+    <script src="/statics/layer/layer.js"></script>
+    <script src="/statics/js/base.js"></script>
+
+{#    <script src="/statics/plugins/datatables/dataTables.bootstrap.css"></script>#}
+
+    <link rel="stylesheet" href="/statics/dist/css/AdminLTE.css">
+
+{% endblock %}
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        showhide(2);
+    }
+    function showhide(n) {
+        var box = document.getElementById("mock");
+        box.className="active";
+        var mock_manager = document.getElementById("mock_manager");
+        mock_manager.className="active";
+    }
+</script>
+<script>
+    $(document).ready(function(){
+        $('.mock_del').click(function(){
+            var row = $(this).closest('tr'); //closest() 方法返回被选元素的第一个祖先元素
+            if (confirm("确定删除?")) {
+                // ajax get 请求 $.get(URL,callback);
+                $.get(
+                        $(this).attr('value'),
+                        {},
+                        function (data) {
+                            row.remove()
+                        }
+                )
+            }
+        });
+    });
+
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <form action="" method="post" id="mock_form">
+        {% csrf_token %}
+            <div class="box">
+                <div class="box-header">
+                    <div class="col-sm-2" style="padding-left: 0">
+						 <a href="{% url 'mock_add' %}"><li class="btn btn-success" ><b>添加Mock接口</b></li></a>
+                  </div>
+
+{#                    <div class="col-sm-4" style="padding-right: 0;">#}
+{#                             <div class="input-group inline-group padding-right: 10px">#}
+{#                                <input type="text" class="form-control m-b " id="search_input" name="keyword" value="{{ keyword }}" placeholder="Search">#}
+{#                                <input type="text" style="display: none">#}
+{#                                <div class="input-group-btn ">#}
+{#                                    <button id='search_btn' href="{% url 'mock_index' %}?search=true" type="button" class="btn btn-primary "  onclick="change_info()">#}
+{#                                        <b>&nbsp;搜索&nbsp;</b>#}
+{#                                    </button>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+                </div>
+
+                <!-- /.box-header -->
+                <div class="box-body">
+                  <table class="table table-striped table-bordered " id="dataform">
+                      <thead>
+                        <tr role="row">
+                            <th class="nosort" >
+                                <input id="checkall" type="checkbox" class="i-checks" name="checkall" value="checkall" data-editable='false' onclick="check_all('mock_form')">
+                            </th>
+                                    <th>ID</th>
+                                    <th>接口名称</th>
+                                    <th>属组</th>
+{#                                    <th>请求方法</th>#}
+                                    <th>启用状态</th>
+                                    <th>更新时间</th>
+                                    <th>创建用户</th>
+                                    <th class="text-center nosort">功能操作</th>
+                                </tr>
+                            </thead>
+                            <tbody >
+                                {% for mock in mock_list %}
+                                    <tr class="even gradeX">
+                                        <td><input type="checkbox" id="id" class="i-checks" value="{{ mock.id }}" name="id" /></td>
+                                        <td class="index" data-value="{{ mock.id }}" ><a href="#"><li style="list-style-type:none" onclick="return tanchu(this.value)" value="{{ mock.id }}"> {{ forloop.counter }}</li></a></td>
+                                        <td>{{ mock.name }}</td>
+                                        <td>{{ mock.group }}</td>
+                                        <td >
+                                            {% ifequal mock.is_active 1 %}
+                                                    <span class="label label-success">启用</span>
+{#                                                    <input id="isactive" value="{{ mock.is_active }}" hidden="hidden">#}
+
+                                            {% else %}
+                                                    <span class="label label-default">禁用</span>
+{#                                                    <input id="isactive" value="{{ mock.is_active }}" hidden="hidden">#}
+                                            {% endifequal %}
+                                        </td>
+                                        <td>{{ mock.update_time|date:"Y-m-d H:i:s"  }}</td>
+
+                                        <td>{{ mock.create_user }} </td>
+                                        <td class="text-center" data-editable='false'>
+                                        <a href="{% url 'mock_run' mock.id %}"><li class="btn btn-sm btn-dropbox"  value="{{ mock.id }}">运行</li></a>
+{#                                            <a href="{% url 'mock_run' mock.id %}"><li class="btn btn-sm btn-adn" onclick="return mock_info(this.value)" value="{{ mock.id }}">运行</li></a>#}
+                                        <a href="#"><li class="btn btn-sm btn-info" onclick="return tanchu(this.value)" value="{{ mock.id }}">编辑</li></a>
+                                        <a value="{% url 'mock_del' %}?id={{ mock.id }}" class="btn btn-sm btn-danger mock_del">删除</a>
+                                    </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                  </table>
+                    <div class="btn-group">
+                        <input type="button" id="mock_del" class="btn btn-danger"   name="del_button" value="批量删除"/>
+
+                    </div>
+{#                <div class="btn-group">#}
+{#                        <input type="button" id="mock_run" class="btn btn-dropbox"   name="run_button" value="批量运行"/>#}
+{##}
+{#                    </div>#}
+                </div>
+            </div>
+        </form>
+    </section>
+        <!-- /.content -->
+{#用于接收mock_edit.html中layui子层的传值#}
+<input id="handle_status" value="" hidden="hidden">
+</div>
+<script>
+function tanchu(n){
+    layer.open({
+    type: 2,
+    title: '修改用例信息',
+    closeBtn: 1,
+    area: ['700px', '550px'],
+    shadeClose: true, //点击遮罩关闭
+    content: ['/mock/edit/' + n, ],
+    end:function(){
+            var handle_status = $("#handle_status").val();
+            if ( handle_status == '1' ) {
+                layer.msg('保存成功！',{
+                    icon: 1,
+                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                },function(){
+                    //history.go(1)前进 history.go(0)刷新 history.go(-1)后退
+                    //history.go(0);
+                    window.location.reload(); // 刷新
+                });
+            } else if ( handle_status == '2' ) {
+                layer.msg('修改失败！',{
+                    icon: 2,
+                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                },function(){
+                    //history.go(0);
+                    window.location.reload(); // 刷新
+                });
+            }
+        }
+  });
+}
+</script>
+
+<script>
+{#    function loadinggif(n) {#}
+{#            // 运行单个接口{#   加载动画   #}
+{#            this.layerIndex = layer.load(0, { shade: [0.5, '#393D49'] });#}
+{##}
+{#            $.ajax({#}
+{#                type: "get",#}
+{#                data: {id:n},#}
+{#                url: "{% url 'mock_run' %}",#}
+{#                success: function () {#}
+{#                    // {#    关闭加载动画并刷新   #}
+{#                    layer.close(this.layerIndex);#}
+{#                     history.go(0);#}
+{#                }#}
+{##}
+{#            });#}
+{##}
+{#    }#}
+
+</script>
+
+<script>
+    {# 过滤 #}
+    function change_info(){
+        {# 序列化的值可在生成 AJAX 请求时用于 URL 查询字符串中 #}
+        var args = $("#mock_form").serialize();
+        window.location = "{% url 'mock_index' %}?" + args
+    }
+
+
+</script>
+<script>
+    $('#mock_del').click(function () {
+        var mock_id_all = getIDall();
+        if (mock_id_all == ''){
+            alert("请至少选择一行!");
+            return false;
+        }
+        if (confirm("确定批量删除?")) {
+            $.ajax({
+                type: "post",
+                data: {mock_id_all: mock_id_all, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'mock_del' %}?arg=batch",
+                success: function () {
+                    parent.location.reload();
+                }
+            });
+        }
+    });
+</script>
+
+
+
+{#<script type="text/javascript" src="/statics/js/common/paginate.js"></script>#}
+    <script type="text/javascript" src="/statics/js/common/paginate_add_search.js"></script>
+{% endblock %}

@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
 from django import forms
 from django.contrib import auth
-from models import UserInfo, RoleList, PermissionList
+from .models import UserInfo, RoleList, PermissionList
 
-
+# TODO 待继续完善TOKEN
+# 参考：http://www.django-rest-framework.org/api-guide/authentication/#apache-mod_wsgi-specific-configuration
+#
 class LoginUserForm(forms.Form):
     username = forms.CharField(
         label=u'账 号',
@@ -64,12 +66,12 @@ class AddUserForm(forms.ModelForm):
                   'is_active'
                   )
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control'}),
-            'password': forms.PasswordInput(attrs={'class': 'form-control'}),
-            'email': forms.TextInput(attrs={'class': 'form-control'}),
-            'nickname': forms.TextInput(attrs={'class': 'form-control'}),
-            'role': forms.Select(attrs={'class': 'form-control'}),
-            'is_active': forms.Select(choices=((True, u'启用'), (False, u'禁用')), attrs={'class': 'form-control'})
+            'username': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:300px;'}),
+            'password': forms.PasswordInput(attrs={'class': 'form-control', 'style': 'width:300px;'}),
+            'email': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:300px;'}),
+            'nickname': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:300px;'}),
+            'role': forms.Select(attrs={'class': 'form-control', 'style': 'width:300px;'}),
+            'is_active': forms.Select(choices=((True, u'启用'), (False, u'禁用')), attrs={'class': 'form-control', 'style': 'width:300px;'})
         }
 
     def __init__(self, *args, **kwargs):
@@ -135,7 +137,7 @@ class RoleListForm(forms.ModelForm):
         model = RoleList
         exclude = ('id', )
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '请输入角色名称'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '请输入角色名称', 'style': 'width:300px;'}),
             'permission': forms.SelectMultiple(attrs={'class': 'form-control',
                                                       'size': '10',
                                                       'multiple': 'multiple'

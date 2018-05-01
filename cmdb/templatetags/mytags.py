@@ -12,6 +12,7 @@ def int2str(value):
     '''
     return str(value)
 
+
 @register.filter(name='res_splict')
 def res_split(value):
     '''
@@ -28,3 +29,21 @@ def res_split(value):
         return res
     else:
         return value
+
+
+@register.filter(name='filter_state')
+def filter_state(result_info, taskname):
+    '''
+    过滤出task中某一个的state
+    :param taskname:
+    :param job:
+    :return:
+    '''
+    for res in result_info:
+        if res.task == taskname:
+            return res.state
+        else:
+            return None
+
+
+

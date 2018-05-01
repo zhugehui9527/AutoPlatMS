@@ -14,6 +14,9 @@ class PermissionList(models.Model):
     def __unicode__(self):
         return '%s(%s)' % (self.name, self.url)
 
+    def __str__(self):
+        return '%s(%s)' % (self.name, self.url)
+
 
 class RoleList(models.Model):
     name = models.CharField(max_length=64)
@@ -24,6 +27,8 @@ class RoleList(models.Model):
     def __unicode__(self):
         return self.name
 
+    def __str__(self):
+        return self.name
 
 class UserManger(BaseUserManager):
     def create_user(self, email, username, password=None):
@@ -55,7 +60,7 @@ class UserInfo(AbstractBaseUser):
     is_active = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     nickname = models.CharField(max_length=64, null=True)
-    role = models.ForeignKey(RoleList, null=True, blank=True)
+    role = models.ForeignKey(RoleList, null=True, blank=True, on_delete=models.SET_NULL)
     objects = UserManger()
 
     USERNAME_FIELD = 'username'
@@ -80,6 +85,4 @@ class UserInfo(AbstractBaseUser):
     def is_staff(self):
         '''Is the user a member of staff'''
         return self.is_superuser
-
-
 

@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/statics/layer/layer.js"></script>
+{% endblock %}
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        showhide(2);
+    }
+    function showhide(n) {
+{#        var box = document.getElementById("case");#}
+{#        box.className="active";#}
+        var box = document.getElementById("group");
+        box.className="active";
+    }
+</script>
+
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <form action="{% url 'mock_group_del' %}" method="post">
+                {% csrf_token %}
+            <div class="box">
+                <div class="box-header">
+                    <div class="btn-group">
+						 <a href="{% url 'mock_group_add' %}"><li class="btn btn-success" ><b>添加属组</b></li></a>
+                  </div>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                  <table class="table table-striped table-bordered" id="dataform">
+                      <thead>
+                        <tr>
+                            <th class="nosort">
+                                <input type="checkbox" onclick="checkAll(this, 'item1');" />
+                            </th>
+                                    <th>ID</th>
+                                    <th>名称</th>
+                                    <th>添加时间</th>
+                                    <th>更新时间</th>
+                                    <th>描述</th>
+                                    <th class="nosort">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if allgroup %}
+                                {% for g in allgroup %}
+                                    <tr class="even gradeA">
+                                        <td><input type="checkbox" id="g_id" class="item1" value="{{ g.id }}" name="g_check" /></td>
+                                        <td>{{ g.id }}</td>
+                                        <td><a href="#"><li style="list-style-type:none" onclick="return tanchu(this.value)" value="{{ g.id }}"> {{ g.name }}</li></a></td>
+                                        <td>{{ g.create_time |date:"Y-m-d H:i:s" }}</td>
+                                        <td>{{ g.update_time |date:"Y-m-d H:i:s" }}</td>
+                                        <td>{{ g.desc }}</td>
+                                        <td>
+                                            <a><li onclick="return tanchu(this.value)" value="{{ g.id }}" class="btn btn-sm btn-info" >编辑</li></a>
+{#                                            <a><li onclick="return group_run(this.value)" id="group_run" value="{{ g.id }}" class="btn btn-sm btn-dropbox " >运行</li></a>#}
+{#                                            <a href="{% url 'group_info' ids %}"><li class="btn btn-adn" ><b>结果</b></li></a>#}
+                                            <a><li value="{{ g.id }}" class="btn btn-sm btn-danger group_del" >删除</li></a>
+
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                {% else %}
+{#                                    <p>No Item are available.</p>#}
+                                {% endif %}
+                            </tbody>
+                  </table>
+                    <div class="btn-group">
+						 <button class="btn btn-danger " onclick="return checkSubmit()"><b>删除属组</b></button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </section>
+        <!-- /.content -->
+      </div>
+{#接收子层回传参数#}
+<input id="handle_status" value="" hidden="hidden">
+<script>
+function checkAll(sender, checkClass) {
+    var checkItems = document.getElementsByTagName('input');
+    for (var i = 0; i < checkItems.length; i++) {
+        var checkItem = checkItems[i];
+        if (checkItem.type === 'checkbox' && checkItem.className === 'item1') {
+            checkItem.checked = sender.checked;
+        }
+    }
+}
+</script>
+
+<script>
+function checkSubmit() {
+    if (!confirm("删除属组，确定删除？")) {
+        window.event.returnValue = false;
+    }
+}
+</script>
+<script>
+function tanchu(n){
+  layer.open({
+  type: 2,
+  title: '属组信息修改',
+  area: ['600px', '450px'],
+  shadeClose: true, //点击遮罩关闭
+  content: ['/mock/group/edit/' + n,],
+  end:function(){
+        var handle_status = $("#handle_status").val();
+        if ( handle_status == '1' ) {
+            layer.msg('保存成功！',{
+                icon: 1,
+                time: 2000 //2秒关闭（如果不配置，默认是3秒）
+            },function(){
+                history.go(0);
+            });
+        } else if ( handle_status == '2' ) {
+            layer.msg('修改失败！',{
+                icon: 2,
+                time: 2000 //2秒关闭（如果不配置，默认是3秒）
+            },function(){
+                history.go(0);
+            });
+        }
+    }
+  });
+}
+</script>
+<script>
+    $('li.group_del').click(function () {
+        var group_id = $(this).val();
+        if (confirm("确定删除?")) {
+            $.ajax({
+                type: "post",
+                data: {id: group_id, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'mock_group_del' %}",
+                success: function () {
+                    parent.location.reload();
+                }
+            });
+        }
+    });
+</script>
+<script>
+   function group_run(id) {
+{#        var group_id = $('#group_run').val();#}
+        if (confirm("确定运行?")) {
+            {#   加载动画         #}
+            this.layerIndex = layer.load(0, { shade: [0.5, '#393D49'] });
+
+            $.ajax({
+                type: "post",
+                data: {ids: id, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'group_run' %}?arg=batch",
+                success: function () {
+                    {#    关闭加载动画并刷新   #}
+                    layer.close(this.layerIndex);
+{#                    parent.location.reload();#}
+                    history.go(0);
+                }
+
+            });
+        }
+   }
+
+   function groups_run() {
+        if (confirm("确定批量运行？")) {
+            {#   加载动画         #}
+            this.layerIndex = layer.load(0, { shade: [0.5, '#393D49'] });
+
+        }
+   }
+
+</script>
+{#<script type="text/javascript" src="/statics/js/common/paginate.js"></script>#}
+<script type="text/javascript" src="/statics/js/common/paginate_add_search.js"></script>
+{% endblock %}

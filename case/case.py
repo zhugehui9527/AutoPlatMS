@@ -1,23 +1,26 @@
 # -*- coding:utf-8 -*-
-from forms import CaseForm
-from models import Case, CaseGroup, IS_ACTIVE, REQUEST_METHOD, REQUEST_TYPE, RESPONSE_STATUS, RESPONSE_TYPE, PROTOCOL
+from .forms import CaseForm
+from .models import Case, CaseGroup, IS_ACTIVE, REQUEST_METHOD, REQUEST_TYPE, RESPONSE_STATUS, RESPONSE_TYPE, PROTOCOL
 from django.shortcuts import render, HttpResponse, redirect
 from django.db.models import Q
-from api import get_object, get_case, api_request
-from api import pages, str2gb
+from .api import get_object, get_case_info, api_request
+from .api import pages, str2gb
 import csv, json , requests
-import demjson
+# import demjson
 import datetime
 from django.contrib.auth.decorators import login_required
 from accounts.permission import permission_verify
+from .api import run_all_case, run_one_case
 import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
+if sys.version_info < (3,0):
+    reload(sys)
+    sys.setdefaultencoding('utf8')
 
 
 @login_required()
 @permission_verify()
 def case(request):
+    '''接口'''
     temp_name = "case/case-header.html"
     case_find = []
     case_info = Case.objects.all()
@@ -52,7 +55,7 @@ def case(request):
     if group_id:
         group = get_object(CaseGroup, id=group_id)
         if group:
-            case_find = Case.objects.filter(group=group)
+            case_find = Case.objects.filter(case_group_id=group_id)
     else:
         case_find = Case.objects.all()
 
@@ -93,6 +96,7 @@ def case(request):
 
 
 def create_case_excel(export, case_id_all):
+    '''创建excel接口用例'''
     # 导出选中
     if export == "true":
         if case_id_all:
@@ -140,7 +144,7 @@ def create_case_excel(export, case_id_all):
                 group_obj = CaseGroup.objects.get(name=c.case_group)
                 c_path = c.path
                 c_protocol = PROTOCOL[int(c.protocol)][1] or PROTOCOL[int(group_obj.protocol)][1]
-                print c_protocol
+
                 c_ip = c.ip or group_obj.ip
                 c_port = c.port or group_obj.port
                 c_proxies = c.proxies or group_obj.proxies
@@ -199,7 +203,6 @@ def create_case_excel(export, case_id_all):
             group_obj = CaseGroup.objects.get(name=c.case_group)
             c_path = c.path
             c_protocol = PROTOCOL[int(c.protocol)][1] or PROTOCOL[int(group_obj.protocol)][1]
-            print c_protocol
             c_ip = c.ip or group_obj.ip
             c_port = c.port or group_obj.port
             c_proxies = c.proxies or group_obj.proxies
@@ -221,6 +224,7 @@ def create_case_excel(export, case_id_all):
 @login_required()
 @permission_verify()
 def case_add(request):
+    '''添加接口'''
     temp_name = 'case/case-header.html'
     if request.method == 'POST':
         c_form = CaseForm(request.POST)
@@ -232,16 +236,17 @@ def case_add(request):
         else:
             tips = u'增加失败！'
             display_control = ''
-        return render(request, 'case/case_add.html', locals())
+        # return render(request, 'case/case_add.html', locals())
     else:
         display_control = 'none'
         c_form = CaseForm()
-        return render(request, 'case/case_add.html', locals())
+    return render(request, 'case/case_add.html', locals())
 
 
 @login_required()
 @permission_verify()
 def case_del(request):
+    '''删除接口'''
     case_id = request.GET.get('id', '')
     # 直接删除
     if case_id:
@@ -262,159 +267,18 @@ def case_del(request):
 @login_required()
 @permission_verify()
 def case_run(request):
-    case_id = request.GET.get('id', '')
-    res = ()
-    headers = {}
-    proxies = {"http": None, "https": None}
-    REQUEST_TYPE_DICT = dict(REQUEST_TYPE)
-    if case_id:
-        case_model = Case.objects.get(id=case_id)
-        group_name = case_model.case_group
-        case_is_active = case_model.is_active
-        case_group = CaseGroup.objects.get(name=group_name)
-        path = case_model.path
-
-        protocol = case_model.protocol or case_group.protocol
-        print 'protocol: ', protocol
-        ip = case_model.ip or case_group.ip
-        port = case_model.port or case_group.port
-
-        if protocol == PROTOCOL[2][0]:  # PROTOCOL[2][0] == 2
-            url = str(PROTOCOL[2][1]) + '://' + str(ip) + ':' + str(port) + str(path)
-
-        else:
-            url = str(PROTOCOL[1][1]) + '://' + str(ip) + ':' + str(port) + str(path)
-
-
-        # content_type = case_model.content_type
-        # case_is_active == 1 启用 ，2 禁用
-        if case_is_active == 1:
-            request_method_int = case_model.request_method
-            if request_method_int == 1:
-                request_method = 'GET'
-
-            elif request_method_int == 2:
-                request_method = 'POST'
-
-
-            request_type = case_model.request_type
-            # 更新content-type
-            headers['content-type'] = REQUEST_TYPE_DICT[request_type]
-
-            try:
-                # 合并字典
-                headers = dict(headers, **(eval(case_model.headers)))
-            except:
-                headers = headers
-
-            try:
-                params = eval(case_model.params)
-            except:
-                params = case_model.params
-
-            try:
-                case_proxies = case_model.proxies
-                group_proxies = case_group.proxies
-                if group_proxies:
-                    proxies["http"] = group_proxies
-                    proxies["https"] = group_proxies
-
-                if case_proxies:
-                    proxies["http"] = case_proxies
-                    proxies["https"] = case_proxies
-
-            except:
-                proxies = {}
-            # case_model.save()
-            try:
-                t1 = datetime.datetime.now()
-                s = requests.session()
-                res = api_request(session=s, method=request_method, url=url, params=params, headers=headers, proxies=proxies)
-                res_status, res_response_message, res_rheaders, res_relapsed = res
-                # 更新数据库中的字段，case_model.fact_res = res_response_message 所有字段都会被更新一次
-                # Publisher.objects.filter(id=52).update(res_response_message='Apress Publishing') 只更新res_response_message其他不会被更新
-                case_model.fact_res = res_response_message
-                case_model.duration = res_relapsed
-                case_model.response_code = res_status
-                case_model.response_header = res_rheaders
-                if case_model.expect_res in res_response_message:
-                    case_model.status = 2
-                else:
-                    case_model.status = 3
-                case_model.save()
-            except Exception as e:
-                case_model.status = 4
-                case_model.fact_res = e
-                case_model.duration = datetime.datetime.now() - t1
-                case_model.save()
-        else:
-            return HttpResponse(u'请先启用此用例')
-
+    '''运行接口'''
     if request.method.lower() == 'post':
-        case_batch = request.GET.get('arg', '')
-        case_id_all = str(request.POST.get('case_id_all', ''))
-        if case_batch:
-            for case_id in case_id_all.split(','):
-                case_model = get_object(Case, id=case_id)
-                request_type = case_model.request_type
-                request_method_int = case_model.request_method
-                case_is_active = case_model.is_active
-                case_group = CaseGroup.objects.get(name=case_model.case_group)
-                path = case_model.path
-                protocol = case_model.protocol or case_group.protocol
-                print 'protocol: ', protocol
-                ip = case_model.ip or case_group.ip
-                port = case_model.port or case_group.port
+        case_id = request.POST.get('id', '')
+        case_id_all = request.POST.get('case_id_all', '')
 
-                if protocol == PROTOCOL[2][0]:  # PROTOCOL[2][0] == 2
-                    url = str(PROTOCOL[2][1]) + '://' + str(ip) + ':' + str(port) + str(path)
-
-                else:
-                    url = str(PROTOCOL[1][1]) + '://' + str(ip) + ':' + str(port) + str(path)
-                # case_is_active == 1 启用 ，2 禁用
-                if case_is_active == 1:
-                    if request_method_int == 2:
-                        request_method = 'POST'
-
-                    elif request_method_int == 1:
-                        request_method = 'GET'
-
-                    # 更新content-type
-                    headers['content-type'] = REQUEST_TYPE_DICT[request_type]
-
-                    try:
-                        # 合并字典
-                        headers = dict(headers, **(eval(case_model.headers)))
-                    except:
-                        headers = headers
-
-                    try:
-                        params = eval(case_model.params)
-                    except:
-                        params = case_model.params
-
-                    try:
-                        t1 = datetime.datetime.now()
-                        s = requests.session()
-                        res = api_request(session=s, method=request_method, url=url, params=params, headers=headers)
-                        res_status, res_response_message, res_rheaders, res_relapsed = res
-                        # json 数据显示格式化
-                        # loads = demjson.decode(res_response_message)
-                        # res_response_message = json.dumps(loads, indent=4, sort_keys=False, ensure_ascii=False)
-                        case_model.fact_res = res_response_message
-                        case_model.duration = res_relapsed
-                        case_model.response_code = res_status
-                        case_model.response_header = res_rheaders
-                        if case_model.expect_res in res_response_message:
-                            case_model.status = 2
-                        else:
-                            case_model.status = 3
-                        case_model.save()
-                    except Exception as e:
-                        case_model.status = 4
-                        case_model.fact_res = e
-                        case_model.duration = datetime.datetime.now() - t1
-                        case_model.save()
+        # 运行一个接口
+        if case_id:
+            run_one_case(case_id)
+        # case_id_all = request.POST.get('case_id_all', '')
+        if case_id_all:
+            case_id_all = case_id_all.split(',')
+            run_all_case(case_id_all)
     # 路由跳转用例列表界面
     return redirect("/casemanage/case/")
 
@@ -422,6 +286,7 @@ def case_run(request):
 @login_required()
 @permission_verify()
 def case_edit(request, ids):
+    '''编辑接口'''
     case_methods = REQUEST_METHOD
     obj = get_object(Case, id=ids)
     mod_status = 0
@@ -429,7 +294,9 @@ def case_edit(request, ids):
         cf = CaseForm(request.POST, instance=obj)
 
         if cf.is_valid():
+
             cf.save()
+
             mod_status = 1
         else:
             mod_status = 2
@@ -442,6 +309,12 @@ def case_edit(request, ids):
 @login_required()
 @permission_verify()
 def case_info(request, ids):
+    """接口详情"""
     temp_name = 'case/case-header.html'
     obj = get_object(Case, id=ids)
+    group_id = obj.case_group_id
+    g = get_object(CaseGroup, id=group_id)
+    protocol = obj.protocol or g.protocol
+    ip = obj.ip or g.ip
+    port = obj.port or g.port
     return render(request, 'case/case_info.html', locals())

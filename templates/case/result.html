@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/statics/layer/layer.js"></script>
+{% endblock %}
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        showhide(2);
+    }
+    function showhide(n) {
+{#        var box = document.getElementById("case");#}
+{#        box.className="active";#}
+        var box = document.getElementById("result");
+        box.className="active";
+    }
+</script>
+
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1><small>用例集结果</small></h1>
+
+    </section>
+
+
+    <!-- Main content -->
+    <section class="content">
+{#        <form action="{% url 'group_del' %}" method="post">#}
+                {% csrf_token %}
+            <div class="box">
+{#                <div class="box-header">#}
+{#                    <div class="btn-group">#}
+{#						 <a href="{% url 'group_add' %}"><li class="btn btn-success" ><b>添加用例集</b></li></a>#}
+{#                  </div>#}
+{#                </div>#}
+                <!-- /.box-header -->
+                <div class="box-body">
+                  <table class="table table-striped table-bordered" id="dataform">
+                      <thead>
+                        <tr>
+                            <th class="nosort">
+                                <input type="checkbox" onclick="checkAll(this, 'item1');" />
+                            </th>
+                                    <th>ID</th>
+                                    <th>用例集</th>
+{#                                    <th>添加时间</th>#}
+
+                                    <th>总数</th>
+                                    <th>成功</th>
+                                    <th>失败</th>
+                                    <th>错误</th>
+                                    <th>成功率</th>
+                                    <th>重跑</th>
+                                    <th>更新时间</th>
+                                    <th>上次状态</th>
+                                    <th>耗时</th>
+                                    <th class="nosort">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if result %}
+                                {% for res in result %}
+                                    <tr class="even gradeA">
+                                        <td><input type="checkbox" id="g_id" class="item1" value="{{ res.id }}" name="g_check" /></td>
+                                        <td>{{ res.id }}</td>
+                                        <td><a href="#"><li style="list-style-type:none" onclick="return tanchu(this.value)" value="{{ res.group.id }}"> {{ res.group.name }}</li></a></td>
+{#                                        <td>{{ res.res_add_time |date:"Y-m-d H:i:s" }}</td>#}
+
+                                        <td>{{ res.res_count}}</td>
+                                        <td>{{ res.res_success}}</td>
+                                        <td>{{ res.res_fail}}</td>
+                                        <td>{{ res.res_error}}</td>
+{#                                        计算用例成功率#}
+                                        <td>{% widthratio res.res_success res.res_count 100 %}%</td>
+                                        <td>{{ res.res_rerun}}</td>
+                                        <td>{{ res.res_update_time |date:"Y-m-d H:i:s" }}</td>
+{#                                        <td>{{ res.res_update_time}}</td>#}
+                                        <td>
+
+                                            {% ifequal res.res_status 1 %}
+                                                <span class="label label-default">未执行</span>
+                                            {% endifequal %}
+                                             {% ifequal res.res_status 2 %}
+                                                <span class="label label-success">成功</span>
+                                             {% endifequal %}
+                                            {% ifequal res.res_status 3 %}
+                                                <span class="label label-warning">失败</span>
+                                            {% endifequal %}
+                                            {% ifequal res.res_status 4 %}
+                                                <span class="label label-danger">错误</span>
+                                            {% endifequal %}
+                                        </td>
+                                        <td>{{ res.res_duration }}</td>
+{#                                        <td>{{ g.id }}</td>#}
+                                        <td>
+{#                                            <a><li onclick="return tanchu(this.value)" value="{{ res.group.id }}" class="btn btn-sm btn-info" >编辑</li></a>#}
+                                            <a><li onclick="return grouprun(this.value)" id="group_run_id" value="{{ res.group.id }}" class="btn btn-sm btn-dropbox ">运行</li></a>
+                                            <a href="{% url 'group_info' res.group.id %}"><li class="btn btn-sm btn-adn"  value="{{ res.group.id }}"><b>详情</b></li></a>
+                                            <a><li value="{{ res.id }}" class="btn btn-sm btn-danger group_del" >删除</li></a>
+
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                {% else %}
+                                    <p>No Item are available.</p>
+                                {% endif %}
+                            </tbody>
+                  </table>
+{#                    <div class="btn-group">#}
+{#						 <button class="btn btn-danger " onclick="return checkSubmit()"><b>删除用例集</b></button>#}
+{#                    </div>#}
+                </div>
+            </div>
+{#        </form>#}
+
+    </section>
+        <!-- /.content -->
+      </div>
+{#接收子层回传参数#}
+<input id="handle_status" value="" hidden="hidden">
+<script>
+function checkAll(sender, checkClass) {
+    var checkItems = document.getElementsByTagName('input');
+    for (var i = 0; i < checkItems.length; i++) {
+        var checkItem = checkItems[i];
+        if (checkItem.type === 'checkbox' && checkItem.className === 'item1') {
+            checkItem.checked = sender.checked;
+        }
+    }
+}
+</script>
+
+<script>
+function checkSubmit() {
+    if (!confirm("删除案例集，确定删除？")) {
+        window.event.returnValue = false;
+    }
+}
+</script>
+<script>
+function tanchu(n){
+  layer.open({
+  type: 2,
+  title: '案例集信息修改',
+  area: ['600px', '450px'],
+  shadeClose: true, //点击遮罩关闭
+  content: ['/casemanage/group/edit/' + n,],
+  end:function(){
+        var handle_status = $("#handle_status").val();
+        if ( handle_status == '1' ) {
+            layer.msg('保存成功！',{
+                icon: 1,
+                time: 2000 //2秒关闭（如果不配置，默认是3秒）
+            },function(){
+                history.go(0);
+            });
+        } else if ( handle_status == '2' ) {
+            layer.msg('修改失败！',{
+                icon: 2,
+                time: 2000 //2秒关闭（如果不配置，默认是3秒）
+            },function(){
+                history.go(0);
+            });
+        }
+    }
+  });
+}
+</script>
+<script>
+    $('li.group_del').click(function () {
+        var group_id = $(this).val();
+        if (confirm("确定删除?")) {
+            $.ajax({
+                type: "post",
+                data: {id: group_id, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'result_del' %}",
+                success: function () {
+                    parent.location.reload();
+                }
+            });
+        }
+    });
+</script>
+<script>
+   function grouprun(id) {
+        if (confirm("确定运行?")) {
+            {#   加载动画         #}
+            this.layerIndex = layer.load(0, { shade: [0.5, '#393D49'] });
+
+            $.ajax({
+                type: "post",
+                data: {ids: id, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'group_run' %}",
+                success: function () {
+                    {#    关闭加载动画并刷新   #}
+                    layer.close(this.layerIndex);
+{#                    parent.location.reload();#}
+                    history.go(0);
+                }
+
+            });
+        }
+   }
+
+
+{#   function groupinfo(id) {#}
+{#       $.ajax({#}
+{#           type: "get",#}
+{#           url: "{% url 'group_info' id %}",#}
+{#           success: function () {#}
+{#               parent.location.reload();#}
+{#           }#}
+{#       });#}
+{#   }#}
+
+</script>
+<script type="text/javascript" src="/statics/js/common/paginate.js"></script>
+{% endblock %}

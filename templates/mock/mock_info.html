@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="content-wrapper">
+    <section class="content">
+
+        <div id="dialog" >
+            <div class="box-header with-border">
+              <h3 class="box-title">查看Mock接口详情</h3>
+
+              <div class="box-tools pull-right">
+
+                <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="关闭" id="Remove" onclick="return back();">
+                  <i class="fa fa-times"></i></button>
+              </div>
+            </div>
+
+            <div class="box-body">
+                <form class="form-horizontal" action="{% url 'mock_run' ids %}" method="GET">
+                        {% csrf_token %}
+
+
+                  <div class="form-group">
+                      <label for="name" class="control-label">接口名称:</label>
+                          {{ m.name }}
+                    </div>
+
+
+                  <div class="form-group">
+                      <label for="mock_path" class="control-label">Mock地址:</label>
+
+                      <div class="divcss5">
+                          <a href="{{ m.mock_path }}">{{ m.mock_path }}</a>
+    {#                      {{ obj.mock_path }}#}
+                      </div>
+                    </div>
+
+                  <div class="form-group">
+                      <label for="path" class="control-label">接口路径:</label>
+
+                      <div class="divcss5">
+                          {{ m.path }}
+                      </div>
+                    </div>
+
+
+                  <div class="form-group">
+                      <label for="response_status" class="control-label">响应码:</label>
+
+                      <div class="divcss5">
+                        {{ response_code }}
+                      </div>
+                    </div>
+
+
+                  <div class="form-group" >
+
+                          <label for="headers" class="control-label">响应头 :</label>
+                         <button type="button" class="btn btn-box-tool" data-target="#collapse_headers" data-toggle="collapse">
+                         点击展开查看详情
+                         </button>
+                        <div id="collapse_headers" class="collapse">
+                        <div class="nav-tabs-custom content">
+                          <ul class="nav nav-tabs pull-right">
+
+                              <li class>
+                                  <a href="#tab_1-1" data-toggle="tab" id="json_format" aria-expanded="true">JSON格式化</a>
+                              </li>
+                              <li class="active">
+                                  <a href="#tab_1-2" data-toggle="tab" id="json_format" aria-expanded="false">原始值</a>
+                              </li>
+                          </ul>
+
+
+                          <div class="tab-content">
+                                  <div class="tab-pane" id="tab_1-1">
+                                      <pre id="headers" class="pre-scrollable">
+
+                                            {{ response_headers }}
+                                     </pre>
+                                  </div>
+                                    <div class="tab-pane nojson active" id="tab_1-2" >
+                                      <div id="headers" class="pre-scrollable">
+
+                                            {{ response_headers }}
+                                     </div>
+                                   </div>
+                          </div>
+                      </div>
+                </div>
+
+                  </div>
+
+
+                  <div class="form-group" >
+                            <label for="fact_content" class="control-label">实际响应:</label>
+                            <button type="button" class="btn btn-box-tool" data-target="#collapse_fact" data-toggle="collapse">
+                                点击展开查看详情
+                            </button>
+                            <div id="collapse_fact" class="collapse">
+                                <div class="nav-tabs-custom content">
+                                    <ul class="nav nav-tabs pull-right">
+                                      <li class>
+                                          <a href="#tab_4-1" data-toggle="tab" id="json_format" aria-expanded="true">JSON格式化</a>
+                                      </li>
+                                      <li class="active">
+                                          <a href="#tab_4-2" data-toggle="tab"   id="json_format" aria-expanded="false">原始值</a>
+                                      </li>
+                                    </ul>
+                                      <div class="tab-content">
+                                              <div class="tab-pane " id="tab_4-1">
+                                                  <pre id="fact_content" class="pre-scrollable">
+
+                                                        {{ response_msg }}
+                                                 </pre>
+                                              </div>
+                                                <div class="tab-pane nojson active" id="tab_4-2" >
+                                                    <div id="fact_content" class="pre-scrollable">
+                                                        {{ response_msg }}
+                                                    </div>
+                                                </div>
+                                      </div>
+                                </div>
+                            </div>
+                 </div>
+
+            </form>
+
+                <input type="hidden" name="id" value="{{ obj.id }}">
+{#              </div>#}
+              <!-- /.box-body -->
+              <div align="center" >
+                <a > <li class="btn btn-primary" style="width: 60pt" onclick="return back();">返回</li></a>
+{#                  <button id="Remove" type="" class="btn btn-primary" style="width: 120px"><b>返回</b></button>#}
+              </div>
+              <!-- /.box-footer -->
+
+        </div>
+    </div>
+
+    </section>
+
+</div>
+
+
+<script>
+
+
+function back() {
+    // 返回
+    history.go(-1);
+
+}
+
+
+function jsonformater(str, replacestr1, replacestr2, ele_id) {
+    try {
+        var str_new =  str.replace(replacestr1, replacestr2);
+        var obj_str = JSON.parse(str_new); //由JSON字符串转换为JSON对象
+        if (typeof(obj_str) == "object" && Object.prototype.toString.call(obj_str).toLowerCase() == "[object object]" && !obj_str.length) {
+            $('#'+ele_id).html(syntaxHighlight(obj_str));
+
+        }
+    }
+    catch(err) {
+        var ele_res = document.getElementById(ele_id);
+        ele_res.style.color="red";
+       }
+}
+
+</script>
+
+
+<script type="text/javascript">
+    var ele_id = 'fact_content';
+{#    var expect_res = document.getElementById(ele_id).innerText;#}
+    var expect_res = "{{ response_msg }}";
+    var replacestr1 = /&#39;/g;
+    var replacestr2 = '"';
+    jsonformater(expect_res, replacestr1, replacestr2, ele_id);
+</script>
+
+{#<script type="text/javascript">#}
+{#    var ele_id = 'params';#}
+{#    var params = "{{ obj.params }}";#}
+{#    var replacestr1 = /&quot;/g;#}
+{#    var replacestr2 = '"';#}
+{#    jsonformater(params, replacestr1, replacestr2, ele_id);#}
+{#</script>#}
+
+<script type="text/javascript">
+    var ele_id = 'headers';
+    var headers = "{{ response_headers }}";
+{#    console.log(headers);#}
+    var replacestr1 = /&#39;/g;
+    var replacestr2 = '"';
+    jsonformater(headers, replacestr1, replacestr2, ele_id);
+</script>
+
+
+
+
+{% endblock %}

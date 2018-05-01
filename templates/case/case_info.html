@@ -31,13 +31,13 @@
 
               <div class="form-group">
                   <label for="protocol" class="control-label">接口协议:</label>
-                    {% ifequal obj.protocol 0 %}
+                    {% ifequal protocol 0 %}
                           None
                        {% endifequal %}
-                   {% ifequal obj.protocol 1 %}
+                   {% ifequal protocol 1 %}
                           http
                        {% endifequal %}
-                    {% ifequal obj.protocol 2 %}
+                    {% ifequal protocol 2 %}
                           https
                        {% endifequal %}
                 </div>
@@ -47,7 +47,7 @@
                   <label for="ip" class="control-label">接口域名:</label>
 
 {#                  <div class="divcss5">#}
-                      {{ obj.ip }}
+                      {{ ip }}
 {#                  </div>#}
                 </div>
 
@@ -55,7 +55,7 @@
                   <label for="port" class="control-label">接口端口:</label>
 
 {#                  <div class="divcss5">#}
-                      {{ obj.port }}
+                      {{ port }}
 {#                  </div>#}
                 </div>
 
@@ -288,6 +288,25 @@
 
 
               <div class="form-group" >
+                      <label for="traceback" class="control-label">异常信息:</label>
+                        <button type="button" class="btn btn-box-tool" data-target="#collapse_traceback" data-toggle="collapse">
+                            点击展开查看详情
+                        </button>
+                        <div id="collapse_traceback" class="collapse">
+                            <div class="nav-tabs-custom content">
+
+                              <div class="tab-content">
+                                      <div id="traceback" class="pre-scrollable">
+
+                                                {{ obj.traceback }}
+                                         </div>
+                              </div>
+                          </div>
+                      </div>
+              </div>
+
+
+              <div class="form-group" >
                       <label for="response_header" class="control-label">响应头 :</label>
                          <button type="button" class="btn btn-box-tool" data-target="#collapse_response_header" data-toggle="collapse">
                             点击展开查看详情
@@ -389,7 +408,7 @@ function jsonformater(str, replacestr1, replacestr2, ele_id) {
 
 <script type="text/javascript">
     var ele_id = 'fact_res';
-    var fact_res = document.getElementById(ele_id).innerText;
+    var fact_res =  document.getElementById(ele_id).innerText;
     var replacestr1 = /&quot;/g;
     var replacestr2 = '"';
     jsonformater(fact_res, replacestr1, replacestr2, ele_id);
@@ -416,7 +435,6 @@ function jsonformater(str, replacestr1, replacestr2, ele_id) {
 <script type="text/javascript">
     var ele_id = 'headers';
     var headers = "{{ obj.headers }}";
-    console.log(headers);
     var replacestr1 = /&#39;/g;
     var replacestr2 = '"';
     jsonformater(headers, replacestr1, replacestr2, ele_id);

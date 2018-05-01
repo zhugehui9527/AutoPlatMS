@@ -1,21 +1,26 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import render, redirect
-# from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
+from django.shortcuts import render, redirect, HttpResponseRedirect
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
+from django.template.context import RequestContext
 from djcelery.models import PeriodicTask, IntervalSchedule, CrontabSchedule
-from django_celery_results.models import TaskResult
+from djcelery.models import TaskState as TaskResult
 from django.contrib.auth.decorators import login_required
 from accounts.permission import permission_verify
 from case.api import get_object
-from forms import PeriodicTaskForm, IntervalForm, CrontabForm, TaskResultForm
+from .forms import PeriodicTaskForm, IntervalForm, CrontabForm, TaskResultForm, EmailMangerForm
 from subprocess import Popen, PIPE
 import os, time
-
+from .models import EmailManager
 
 @login_required
 @permission_verify()
 def index(request):
     temp_name = 'jobs/job_header.html'
     # 所有temp_name 会在base.html中被调用{% include temp_name %}
+
     jobs_info = PeriodicTask.objects.all()
     return render(request, 'jobs/job_list.html', locals())
 
@@ -48,15 +53,15 @@ def job_add(request):
             j_form.save()
             tips = u"添加成功！"
             display_control = ""
-            return redirect("/jobs/job/list/")
+            # return redirect("/jobs/job/list/")
         else:
             tips = u"增加失败！"
             display_control = ""
-            return render(request, "jobs/job_add.html", locals())
+            # return render(request, "jobs/job_add.html", locals())
     else:
         display_control = "none"
         j_form = PeriodicTaskForm()
-        return render(request, "jobs/job_add.html", locals())
+    return render(request, "jobs/job_add.html", locals())
 
 
 @login_required
@@ -206,7 +211,8 @@ def job_result_list(request):
     # 所有temp_name 会在base.html中被调用{% include temp_name %}
     # result_info = TaskResult.objects.all()
     # order_by 加 - 倒序排列
-    result_info = TaskResult.objects.all().order_by('-date_done')
+    # [:100] 只显示前100条数据
+    result_info = TaskResult.objects.all().order_by('-tstamp')[:100]
 
     return render(request, 'jobs/job_result_list.html', locals())
 
@@ -236,13 +242,27 @@ def job_result_edit(request, ids):
 @permission_verify()
 def job_result_del(request):
     temp_name = "jobs/job_header.html"
+
     if request.method == 'POST':
         results = request.POST.getlist('tid_check', [])
+        result_batch = request.GET.get('delete', '')
         if results:
             for res in results:
                 TaskResult.objects.filter(id=res).delete()
+
+        if result_batch.lower() == 'all':
+            result_del_all = TaskResult.objects.all().delete()
+
     result_info = TaskResult.objects.all()
+
     return render(request, "jobs/job_result_list.html", locals())
+
+# @login_required
+# @permission_verify()
+# def job_result_del_all(request):
+#     temp_name = "jobs/job_header.html"
+#     result_del = TaskResult.objects.all().delete()
+#     return render(request, "jobs/job_result_list.html", locals())
 
 
 @login_required
@@ -274,11 +294,11 @@ def job_backend_task(request, name, action):
        cmd2 = celery worker -A AutoPlatMS --loglevel=info
     """
     # cmd = name+" "+action+" -l info -b redis://localhost:6370"
-    celery = 'celery'
+
     worker_dict = {
-        'start': celery +' multi start w1 -E --pidfile=/var/run/celery/%n.pid --logfile=/var/log/celery/%n%I.log',
-        'stop': celery +" multi stop w1 -E --pidfile=/var/run/celery/%n.pid",
-        'restart': celery +" multi restart w1 -E --pidfile=/var/run/celery/%n.pid --logfile=/var/log/celery/%n%I.log",
+        'start': 'celery multi start w1 --pidfile=/var/run/celery/%n.pid --logfile=/var/log/celery/%n%I.log --verbose  ',
+        'stop': "celery multi stop w1  --pidfile=/var/run/celery/%n.pid",
+        'restart': "celery multi restart w1 --pidfile=/var/run/celery/%n.pid --logfile=/var/log/celery/%n%I.log --verbose ",
         # 'stopwait': celery +" multi stopwait w1 -E -A AutoPlatMS --pidfile=/var/run/celery/%n.pid",
     }
 
@@ -286,20 +306,96 @@ def job_backend_task(request, name, action):
         cmd = worker_dict[action]
     elif name.lower() == 'beat':
         if action.lower() == 'start':
-            cmd = celery +' beat -A AutoPlatMS --pidfile=/var/run/celery/beat.pid --detach '
+            cmd = 'celery beat -A AutoPlatMS --pidfile=/var/run/celery/beat.pid --detach'
         elif action.lower() == 'stop':
             cmd = "pkill -9 -f 'celery beat' && rm -rf /var/run/celery/beat.pid"
 
         elif action.lower() == 'restart':
-            cmd = "pkill -9 -f 'celery beat' && rm -rf /var/run/celery/beat.pid && " + celery \
-                  +" beat -A AutoPlatMS --pidfile=/var/run/celery/beat.pid --detach"
-    print cmd
-    r = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
-    rc = r.communicate()
-    print rc[0]
+            cmd = "pkill -9 -f 'celery beat' && rm -rf /var/run/celery/beat.pid && " +\
+                  "celery beat -A AutoPlatMS --pidfile=/var/run/celery/beat.pid --detach"
+        else:
+            pass
+    else:
+        pass
+
+    print(cmd)
+    # r = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
+    # rc = r.communicate()
+    # print(rc[0])
+    import os
+    os.system(cmd)
     time.sleep(3)
-    cmd2 = 'whoami'
+    cmd2 = 'pwd'
     r1 = Popen(cmd2, stdout=PIPE, stderr=PIPE, shell=True)
     rc1 = r1.communicate()
-    print rc1[0]
+    print(rc1[0])
     return redirect("/jobs/job/backend/")
+
+
+@login_required
+@permission_verify()
+def email_list(request):
+    temp_name = 'jobs/job_header.html'
+    email_info = EmailManager.objects.all()
+
+    return render(request, 'jobs/mail_list.html', locals())
+
+
+@login_required
+@permission_verify()
+def email_add(request):
+    temp_name = 'jobs/job_header.html'
+    if request.method == 'POST':
+        e_form = EmailMangerForm(request.POST)
+        if e_form.is_valid():
+            e_form.save()
+            tips = u"添加成功！"
+            display_control = ""
+            return redirect("/jobs/job/list/")
+        else:
+            tips = u"增加失败！"
+            display_control = ""
+            return render(request, "jobs/mail_add.html", locals())
+    else:
+        display_control = "none"
+        e_form = EmailMangerForm()
+        return render(request, "jobs/mail_add.html", locals())
+
+
+@login_required
+@permission_verify()
+def email_edit(request, ids):
+    temp_name = 'jobs/job_header.html'
+    edit_status = 0
+    e_obj = get_object(EmailManager, id=ids)
+
+    if request.method.lower() == 'post':
+        # form = TaskResultForm(request.POST, instance=obj)
+        form = EmailMangerForm(request.POST, instance=e_obj)
+        if form.is_valid():
+            form.save()
+            edit_status = 1
+            display_control = ''
+            tips = u'更新成功！'
+        else:
+            edit_status = 2
+            display_control = ''
+            tips = u'更新失败！'
+
+    else:
+        form = EmailMangerForm(instance=e_obj)
+        display_control = "none"
+
+    return render(request, 'jobs/mail_edit.html', locals())
+
+
+@login_required
+@permission_verify()
+def email_del(request, ids):
+    '''
+    :param request:
+    :return:
+    '''
+    if ids:
+        EmailManager.objects.filter(id=ids).delete()
+    return HttpResponseRedirect(reverse('job_email_list'), RequestContext(request))

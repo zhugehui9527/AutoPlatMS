@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>修改Mock接口</title>
+    {% include 'link_css.html' %}
+    {% include 'head_script.html' %}
+</head>
+<body>
+<div class="content-wrapper">
+    <section class="content">
+
+        <div id="dialog">
+        <div class="box">
+            <form class="form-horizontal" action="{% url 'mock_edit' ids %}" method="POST">
+                        {% csrf_token %}
+              <div class="box-body">
+
+
+               {{ cf.as_p }}
+
+{#                <input type="hidden" name="id" value="{{ obj.id }}">#}
+              </div>
+              <!-- /.box-body -->
+              <div class="box-footer">
+                <button type="submit" class="btn btn-info pull-left" style="width: 120px"><b>保存</b></button>
+              </div>
+              <!-- /.box-footer -->
+            </form>
+
+        </div>
+    </div>
+
+    </section>
+
+</div>
+{#回传参数至父层#}
+<script type="text/javascript">
+        var index = parent.layer.getFrameIndex(window.name);
+        var mod_status = {{ mod_status }};
+        if ( mod_status == '1' ) {
+            parent.$("#handle_status").val('1');
+              parent.layer.close(index);
+        } else if( mod_status == '2' ) {
+            parent.$("#handle_status").val('2');
+            parent.layer.close(index);
+        } else {
+
+        }
+
+</script>
+</body>

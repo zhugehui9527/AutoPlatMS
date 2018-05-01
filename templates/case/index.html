@@ -19,6 +19,8 @@
     function showhide(n) {
         var box = document.getElementById("case");
         box.className="active";
+        var case_manager = document.getElementById("case_manager");
+        case_manager.className="active";
     }
 </script>
 <script>
@@ -38,12 +40,13 @@
         });
     });
 
-
 </script>
 
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
+
+        <h1><small>接口列表</small></h1>
     </section>
 
     <!-- Main content -->
@@ -53,13 +56,13 @@
             <div class="box">
                 <div class="box-header">
                     <div class="col-sm-2" style="padding-left: 0">
-						 <a href="{% url 'case_add' %}"><li class="btn btn-success" ><b>添加用例</b></li></a>
+						 <a href="{% url 'case_add' %}"><li class="btn btn-success" ><b>添加接口</b></li></a>
                   </div>
                 <div class="col-sm-5" style="padding-left: 0px">
 
                             <label>
                                 <select name="case_group" class="form-control m-b input-sm" onchange="change_info()">
-                                    <option value="">所属项目</option>
+                                    <option value="">所属案例集</option>
                                     {% for case_group in group_info %}
                                         {% ifequal case_group.name group_name %}
                                             <option value="{{ case_group.name }}" selected> {{ case_group.name|slice:":20" }} </option>
@@ -98,7 +101,7 @@
 
                         <label>
                                 <select name="status" class="form-control m-b input-sm" onchange="change_info()">
-                                    <option value="">用例状态</option>
+                                    <option value="">接口状态</option>
                                     {% for sta in status_s %}
                                         {% ifequal sta.0|int2str status %}
                                             <option value="{{ sta.0 }}" selected> {{ sta.1 }}</option>
@@ -138,12 +141,12 @@
                             </th>
                                     <th>ID</th>
                                     <th>接口名称</th>
-                                    <th>所属项目</th>
+                                    <th>所属案例集</th>
                                     <th>请求方法</th>
                                     <th>启用状态</th>
                                     <th>更新时间</th>
                                     <th>执行耗时</th>
-                                    <th>用例状态</th>
+                                    <th>接口状态</th>
                                     <th class="text-center nosort">功能操作</th>
                                 </tr>
                             </thead>
@@ -191,7 +194,7 @@
                                         <td class="text-center" data-editable='false'>
                                         {#  <a href="{% url 'case_run' %}?id={{ case.id }}"><li class="btn btn-sm btn-dropbox"  value="{{ case.id }}">运行</li></a>#}
                                         <a href="#"><li class="btn btn-sm btn-dropbox" onclick="return loadinggif(this.value)" value="{{ case.id }}">运行</li></a>
-                                            <a href="{% url 'case_info' case.id %}"><li class="btn btn-sm btn-adn" onclick="return case_info(this.value)" value="{{ case.id }}">详情</li></a>
+                                            <a href="{% url 'case_info' case.id %}"><li class="btn btn-sm btn-adn"  value="{{ case.id }}">详情</li></a>
                                         <a href="#"><li class="btn btn-sm btn-info" onclick="return tanchu(this.value)" value="{{ case.id }}">编辑</li></a>
                                         <a value="{% url 'case_del' %}?id={{ case.id }}" class="btn btn-sm btn-danger case_del">删除</a>
                                     </td>
@@ -200,11 +203,11 @@
                             </tbody>
                   </table>
                     <div class="btn-group">
-                        <input type="button" id="case_del" class="btn btn-danger"   name="del_button" value="删除用例"/>
+                        <input type="button" id="case_del" class="btn btn-danger"   name="del_button" value="批量删除"/>
 
                     </div>
                 <div class="btn-group">
-                        <input type="button" id="case_run" class="btn btn-dropbox"   name="run_button" value="运行用例"/>
+                        <input type="button" id="case_run" class="btn btn-dropbox"   name="run_button" value="批量运行"/>
 
                     </div>
                 </div>
@@ -253,13 +256,13 @@ function tanchu(n){
 
 <script>
     function loadinggif(n) {
-            // {#   加载动画   #}
+            // 运行单个接口{#   加载动画   #}
             this.layerIndex = layer.load(0, { shade: [0.5, '#393D49'] });
 
             $.ajax({
                 type: "post",
                 data: {id:n, csrfmiddlewaretoken: '{{ csrf_token }}'},
-                url: "{% url 'case_run' %}?id="+n,
+                url: "{% url 'case_run' %}",
                 success: function () {
                     // {#    关闭加载动画并刷新   #}
                     layer.close(this.layerIndex);
@@ -331,11 +334,11 @@ function tanchu(n){
         if (confirm("确定运行?")) {
             {#   加载动画         #}
             this.layerIndex = layer.load(0, { shade: [0.5, '#393D49'] });
-
+            console.log(case_id_all);
             $.ajax({
                 type: "post",
                 data: {case_id_all: case_id_all, csrfmiddlewaretoken: '{{ csrf_token }}'},
-                url: "{% url 'case_run' %}?arg=batch",
+                url: "{% url 'case_run' %}",
                 success: function () {
                     {#    关闭加载动画并刷新   #}
                     layer.close(this.layerIndex);

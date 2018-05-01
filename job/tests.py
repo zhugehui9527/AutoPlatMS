@@ -1,31 +1,35 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.test import TestCase
+# from django.test import TestCase
 
 # Create your tests here.
-from subprocess import *
-import commands, os
-# cmd = "celery multi start w1 -E --pidfile=/var/run/celery/%n.pid --logfile=/var/log/celery/%n%I.log"
-# # cmd = 'ps -A |grep celery'
-# # cmd = 'pkill -9 -f "celery worker"'
-# print cmd
-# # out = os.system(cmd)
-# p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
-# out = p.communicate()
-# print out[0]
-# print ">>>>>>>>>>>>>>>>"
+# from .views import DumpCam
+
+# from celery import Celery
 
 
-def gete(*args):
-    if isinstance(args, tuple):
-        print 'YES'
-    print type(args)
-    for i in args:
-        print i
-    # print args
+# def my_monitor(app):
+#     state = app.events.State()
+#
+#     def announce_failed_tasks(event):
+#         state.event(event)
+#         # task name is sent only with -received event, and state
+#         # will keep track of this for us.
+#         task = state.tasks.get(event['uuid'])
+#         print('TASK FAILED: %s[%s] %s' % (
+#             task.name, task.uuid, task.info(),))
+#
+#     with app.connection() as connection:
+#         recv = app.events.Receiver(connection, handlers={
+#                 'task-succeeded': announce_failed_tasks,
+#                 '*': state.event,
+#         })
+#         recv.capture(limit=None, timeout=None, wakeup=True)
 
-a = [1,2,3]
-b = 1
-c =2
-gete(b)
+# if __name__ == '__main__':
+#     app = Celery(broker='redis://localhost:6379/0')
+#     my_monitor(app)
+import logging
+logger = logging.getLogger(__name__)
+

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% include 'link_css.html' %}
+    {% include 'head_script.html' %}
+</head>
+<body>
+<div class="content-wrapper">
+
+
+    <section class="content">
+
+        <div class="modal-body">
+                <div class="box ">
+                    <!-- /.box-header -->
+                    <!-- form start -->
+                    <form class="form-horizontal" action="{% url 'mock_group_save'%}" method="POST">
+                              {% csrf_token %}
+                        <div class="box-body">
+
+                        {{ group_form.as_p }}
+                        <input type="hidden" name="id" value="{{ obj.id }}">
+                      </div>
+                        <!-- Select multiple-->
+                        <div class="col-sm-10">
+                            <p>注意：> 表示添加；< 表示移除；>> 表示全部添加；<< 表示全部移除</p>
+                                <div class="form-group">
+{#                                    <label>可选项</label>#}
+                                        <div class="col-xs-4 group-select">
+                                            <select id="unselect"  name="unselect" multiple="multiple"  >
+                                                {% for mock in unselect %}
+                                                    <option value="{{ mock.name }}">{{ mock.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+{#                                    <label>组成员</label>#}
+                                            <div class="col-xs-2">
+                                                <button id="move-right-all" type="button" class="btn btn-block move-btn"  onclick="f3()">
+                                                    <i class="glyphicon glyphicon-forward"></i>
+                                                 </button>
+
+                                                <button id="move-right" type="button" class="btn btn-block move-btn"  onclick="f1()">
+                                                    <i class="glyphicon glyphicon-chevron-right"></i>
+                                                 </button>
+
+                                                <button id="move-left" type="button" class="btn btn-block move-btn"  onclick="f2()">
+                                                    <i class="glyphicon glyphicon-chevron-left"></i>
+                                                 </button>
+
+
+                                                <button id="move-left-all" type="button" class="btn btn-block move-btn"  onclick="f4()">
+                                                    <i class="glyphicon glyphicon-backward"></i>
+                                                 </button>
+
+                                            </div>
+
+
+                                        <div class="col-xs-5 group-select">
+                                            <select id="members" name="members" multiple="multiple"  >
+                                                {% for mock in members %}
+                                                    <option value="{{ mock.name }}">{{ mock.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                         </div>
+                                </div>
+{#                            <div class="form-group" align="center">#}
+{#                                <input  type="button" value="添加到组" onclick="f1()">#}
+{#                                <input  type="button" value="从组移除" onclick="f2()">#}
+{#                            </div>#}
+                            </div>
+                      <!-- /.box-body -->
+                      <div class="box-footer" align="center">
+                        <button type="submit" class="btn btn-info" onclick="">保存</button>
+                      </div>
+                      <!-- /.box-footer -->
+                    </form>
+        </div>
+    </div>
+
+
+    </section>
+
+  </div>
+{#回传参数至父层#}
+<script type="text/javascript">
+        var index = parent.layer.getFrameIndex(window.name);
+        var success = {{ mod_status }};
+        if ( success == '1' ) {
+            parent.$("#handle_status").val('1');
+              parent.layer.close(index);
+        } else if( success == '2' ) {
+            parent.$("#handle_status").val('2');
+            parent.layer.close(index);
+        }
+</script>
+<script type="text/javascript">
+    //左边选中项目移动到右边
+    function f1(){
+        // :selected
+        $("#unselect option:selected").appendTo("#members");
+    }
+    //右边选中的项目移动到左边
+    function f2(){
+        $("#members option:selected").appendTo("#unselect");
+    }
+
+    //左边全部项目(设置全部为选中状态)移动到右边
+    function f3(){
+        $("#unselect option").attr('selected','selected').appendTo("#members");
+    }
+    //左边全部项目(设置全部为选中状态)移动到左边
+    function f4(){
+        $("#members option").attr('selected','selected').appendTo("#unselect");
+    }
+
+     //双击选项
+    $('#unselect').dblclick(function(){ //绑定双击事件
+        //获取全部的选项,删除并追加给对方
+        $("option:selected",this).appendTo('#members'); //追加给对方
+    });
+
+    //双击选项
+    $('#members').dblclick(function(){
+        $("option:selected",this).appendTo('#unselect');
+    });
+
+</script>
+</body>
+</html>

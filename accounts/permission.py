@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from django.core.urlresolvers import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from forms import PermissionListForm
-from models import UserInfo, RoleList, PermissionList
+from .forms import PermissionListForm
+from .models import UserInfo, RoleList, PermissionList
 
 
 def permission_verify():

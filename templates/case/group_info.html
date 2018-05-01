@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load mytags %}
+{% block self_head_css_js %}
+    <script src="/statics/js/jquery-ui-1.12.1.min.js"></script>
+    <script src="/statics/layer/layer.js"></script>
+    <script src="/statics/js/base.js"></script>
+    <link rel="stylesheet" href="/statics/dist/css/AdminLTE.css">
+
+{% endblock %}
+{% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        showhide(2);
+    }
+    function showhide(n) {
+        var box = document.getElementById("group");
+        box.className="active";
+    }
+</script>
+<script>
+    $(document).ready(function(){
+        $('.case_del').click(function(){
+            var row = $(this).closest('tr'); //closest() 方法返回被选元素的第一个祖先元素
+            if (confirm("确定删除?")) {
+                // ajax get 请求 $.get(URL,callback);
+                $.get(
+                        $(this).attr('value'),
+                        {},
+                        function (data) {
+                            row.remove()
+                        }
+                )
+            }
+        });
+    });
+
+</script>
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>
+            <small>查看运行结果--案例集--{{ obj.name }}</small>
+        </h1>
+
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <form action="" method="post" id="case_form">
+        {% csrf_token %}
+            <div class="box">
+                <div class="box-header">
+{#                    <table class="table table-bordered table-striped" >#}
+{#                        <thead>#}
+{#                           <tr role="row">#}
+{#                               <th>ID</th>#}
+{#                               <th>案例集</th>#}
+{#                               <th>状态</th>#}
+{#                               <th>更新时间</th>#}
+{#                               <th>耗时</th>#}
+{#                           </tr>#}
+{#                        </thead>#}
+{#                        <tbody>#}
+{#                            <tr>#}
+{#                                <th>{{ obj.id }}</th>#}
+{#                                <th>{{ obj.name }}</th>#}
+{#                                <th>#}
+{##}
+{#                                            {% ifequal obj.status 1 %}#}
+{#                                                <span class="label label-default">未执行</span>#}
+{#                                            {% endifequal %}#}
+{#                                             {% ifequal obj.status 2 %}#}
+{#                                                <span class="label label-success">成功</span>#}
+{#                                             {% endifequal %}#}
+{#                                            {% ifequal obj.status 3 %}#}
+{#                                                <span class="label label-warning">失败</span>#}
+{#                                            {% endifequal %}#}
+{#                                            {% ifequal obj.status 4 %}#}
+{#                                                <span class="label label-danger">错误</span>#}
+{#                                            {% endifequal %}#}
+{#                                        </th>#}
+{#                                <th>{{ obj.update_time |date:"Y-m-d H:i:s"}}</th>#}
+{#                                <th>{{ obj.duration }}</th>#}
+{#                            </tr>#}
+{#                        </tbody>#}
+{#                    </table>#}
+                </div>
+
+                <!-- /.box-header -->
+                <div class="box-body">
+                  <table class="table table-striped table-bordered " id="dataform">
+                      <thead>
+                        <tr role="row">
+                            <th class="nosort" >
+                                <input id="checkall" type="checkbox" class="i-checks" name="checkall" value="checkall" data-editable='false' onclick="check_all('case_form')">
+                            </th>
+                                    <th>ID</th>
+                                    <th>接口名称</th>
+                                    <th>所属案例集</th>
+                                    <th>请求方法</th>
+                                    <th>启用状态</th>
+                                    <th>更新时间</th>
+                                    <th>执行耗时</th>
+                                    <th>接口状态</th>
+                                    <th class="text-center nosort">功能操作</th>
+                                </tr>
+                            </thead>
+                            <tbody >
+                                {% for case in members %}
+
+                                    <tr class="even gradeX">
+                                        <td><input type="checkbox" id="id" class="i-checks" value="{{ case.id }}" name="id" /></td>
+                                        <td class="index" data-value="{{ case.id }}" ><a href="#"><li style="list-style-type:none" onclick="return tanchu(this.value)" value="{{ case.id }}"> {{ forloop.counter }}</li></a></td>
+                                        <td>{{ case.case_name }}</td>
+                                        <td>{{ case.case_group.name }}</td>
+                                        <td>
+                                            {% ifequal case.request_method 1 %}
+                                                <span >GET</span>
+                                            {% else %}
+                                                <span>POST</span>
+                                            {% endifequal %}
+                                        </td>
+                                        <td >
+                                            {% ifequal case.is_active 1 %}
+                                                    <span class="label label-success">启用</span>
+{#                                                    <input id="isactive" value="{{ case.is_active }}" hidden="hidden">#}
+
+                                            {% else %}
+                                                    <span class="label label-default">禁用</span>
+{#                                                    <input id="isactive" value="{{ case.is_active }}" hidden="hidden">#}
+                                            {% endifequal %}
+                                        </td>
+                                        <td>{{ case.update_time|date:"Y-m-d H:i:s"  }}</td>
+                                        <td>{{ case.duration }} </td>
+                                        <td>
+
+                                            {% ifequal case.status 1 %}
+                                                <span class="label label-default">未执行</span>
+                                            {% endifequal %}
+                                             {% ifequal case.status 2 %}
+                                                <span class="label label-success">成功</span>
+                                             {% endifequal %}
+                                            {% ifequal case.status 3 %}
+                                                <span class="label label-warning">失败</span>
+                                            {% endifequal %}
+                                            {% ifequal case.status 4 %}
+                                                <span class="label label-danger">错误</span>
+                                            {% endifequal %}
+                                        </td>
+                                        <td class="text-center" data-editable='false'>
+                                        {#  <a href="{% url 'case_run' %}?id={{ case.id }}"><li class="btn btn-sm btn-dropbox"  value="{{ case.id }}">运行</li></a>#}
+                                        <a href="#"><li class="btn btn-sm btn-dropbox" onclick="return loadinggif(this.value)" value="{{ case.id }}">运行</li></a>
+                                            <a href="{% url 'case_info' case.id %}"><li class="btn btn-sm btn-adn" onclick="return case_info(this.value)" value="{{ case.id }}">详情</li></a>
+                                        <a href="#"><li class="btn btn-sm btn-info" onclick="return tanchu(this.value)" value="{{ case.id }}">编辑</li></a>
+                                        <a value="{% url 'case_del' %}?id={{ case.id }}" class="btn btn-sm btn-danger case_del">删除</a>
+                                    </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                  </table>
+                    <div class="btn-group">
+                        <input type="button" id="case_del" class="btn btn-danger"   name="del_button" value="批量删除"/>
+
+                    </div>
+                <div class="btn-group">
+                        <input type="button" id="case_run" class="btn btn-dropbox"   name="run_button" value="批量运行"/>
+
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+        <!-- /.content -->
+{#用于接收case_edit.html中layui子层的传值#}
+<input id="handle_status" value="" hidden="hidden">
+</div>
+
+
+<script>
+function tanchu(n){
+    layer.open({
+    type: 2,
+    title: '修改用例信息',
+    closeBtn: 1,
+    area: ['700px', '550px'],
+    shadeClose: true, //点击遮罩关闭
+    content: ['/casemanage/case/edit/' + n, ],
+    end:function(){
+            var handle_status = $("#handle_status").val();
+            if ( handle_status == '1' ) {
+                layer.msg('保存成功！',{
+                    icon: 1,
+                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                },function(){
+                    //history.go(1)前进 history.go(0)刷新 history.go(-1)后退
+                    //history.go(0);
+                    window.location.reload(); // 刷新
+                });
+            } else if ( handle_status == '2' ) {
+                layer.msg('修改失败！',{
+                    icon: 2,
+                    time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                },function(){
+                    //history.go(0);
+                    window.location.reload(); // 刷新
+                });
+            }
+        }
+  });
+}
+</script>
+
+<script>
+    function loadinggif(n) {
+            // {#   加载动画   #}
+            this.layerIndex = layer.load(0, { shade: [0.5, '#393D49'] });
+
+            $.ajax({
+                type: "post",
+                data: {id:n, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'case_run' %}?id="+n,
+                success: function () {
+                    // {#    关闭加载动画并刷新   #}
+                    layer.close(this.layerIndex);
+                     history.go(0);
+                }
+
+            });
+
+    }
+
+</script>
+
+<script>
+    {# 过滤 #}
+    function change_info(){
+        {# 序列化的值可在生成 AJAX 请求时用于 URL 查询字符串中 #}
+        var args = $("#case_form").serialize();
+        window.location = "{% url 'case' %}?" + args
+    }
+
+    function export_excel(){
+        var case_id_all = getIDall();
+        if (case_id_all == ''){
+            if(confirm('您没有勾选，是否导出全部信息？')){
+                var args = $("#case_form").serialize();
+                window.location = "{% url 'case' %}?export=all&" + args
+                }else{
+                    return false;
+                }
+            }else{
+                var args = $("#case_form").serialize();
+                window.location = "{% url 'case' %}?export=true&" + args
+            }
+    }
+    $("#search_input").keydown(function(e) {
+        if (e.keyCode == 13) {
+            change_info()
+        }
+        });
+</script>
+<script>
+    $('#case_del').click(function () {
+        var case_id_all = getIDall();
+        if (case_id_all == ''){
+            alert("请至少选择一行!");
+            return false;
+        }
+        if (confirm("确定删除?")) {
+            $.ajax({
+                type: "post",
+                data: {case_id_all: case_id_all, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'case_del' %}?arg=batch",
+                success: function () {
+                    parent.location.reload();
+                }
+            });
+        }
+    });
+</script>
+
+
+<script>
+   $('#case_run').click(function () {
+        var case_id_all = getIDall();
+        if (case_id_all == ''){
+            alert("请至少选择一行!");
+            return false;
+        }
+        if (confirm("确定运行?")) {
+            {#   加载动画         #}
+            this.layerIndex = layer.load(0, { shade: [0.5, '#393D49'] });
+            console.log(case_id_all);
+            $.ajax({
+                type: "post",
+                data: {case_id_all: case_id_all, csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'case_run' %}?arg=batch",
+                success: function () {
+                    {#    关闭加载动画并刷新   #}
+                    layer.close(this.layerIndex);
+{#                    parent.location.reload();#}
+                    history.go(0);
+                }
+
+            });
+        }
+    });
+
+</script>
+
+<script type="text/javascript" src="/statics/js/common/paginate.js"></script>
+
+{% endblock %}

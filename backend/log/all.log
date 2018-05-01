@@ -1,0 +1,8 @@
+2018-05-01 15:58:34,371 [django.server:124] [basehttp:log_message] [INFO]- "GET /jobs/job/backend/ HTTP/1.1" 200 18470
+2018-05-01 15:58:35,063 [django.server:124] [basehttp:log_message] [INFO]- "GET /jobs/job/backend/ HTTP/1.1" 200 18470
+2018-05-01 16:17:31,169 [django.server:124] [basehttp:log_message] [INFO]- "GET /jobs/job/getstate/b45659df-876d-4f9c-954f-78e91e16681d/ HTTP/1.1" 200 112
+2018-05-01 16:17:51,783 [django.server:124] [basehttp:log_message] [INFO]- "GET /jobs/job/backend/ HTTP/1.1" 200 18470
+2018-05-01 16:17:53,198 [django.server:124] [basehttp:log_message] [INFO]- "GET /navi/ HTTP/1.1" 200 20844
+2018-05-01 16:17:55,476 [django.server:124] [basehttp:log_message] [INFO]- "GET /jobs/job/list/ HTTP/1.1" 200 37108
+2018-05-01 16:17:56,044 [django.server:124] [basehttp:log_message] [INFO]- "GET /mock/mock_index/ HTTP/1.1" 200 26134
+2018-05-01 16:17:56,829 [django.server:124] [basehttp:log_message] [INFO]- "GET /accounts/user/list/ HTTP/1.1" 200 21814

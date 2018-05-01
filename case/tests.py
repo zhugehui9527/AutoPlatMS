@@ -22,18 +22,17 @@ import requests
 # r2 = s.post(url=url11, data=data11)
 # r2.content
 
-request = 'task'
-print getattr(request, 'task', None) if request else None
+a = [1, 3, 2]
+dict1 = {
+    'a':1,
+    'b':2
+}
 
+dict2 = {
 
-a = None
-print sum(range(10),3) if a else None
+}
 
-tasks = [1, 3]
-print zip(tasks, tasks)
+for i in a:
+    dict2[i] = dict1
 
-
-list1 = range(10)
-
-b = list(x for x in list1 if x!=1)
-print b
+print(dict2)

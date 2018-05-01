@@ -11,8 +11,8 @@
     function showhide(n) {
         var box = document.getElementById("group");
         box.className="active";
-        var box = document.getElementById("case");
-        box.className="active";
+{#        var box = document.getElementById("case");#}
+{#        box.className="active";#}
     }
 </script>
 
@@ -52,15 +52,15 @@
     </section>
 
   </div>
-<script language="javascript" type="text/javascript">
-  function CheckChinese(obj,val){
-　　var reg = new RegExp("[\\u4E00-\\u9FFF]+","g");
-　　if(reg.test(val)){
-       alert("不能输入汉字！");
-       var strObj = document.getElementById(obj);
-       strObj.value = "";
-       strObj.focus();
-　　}
-  }
-</script>
+{#<script language="javascript" type="text/javascript">#}
+{#  function CheckChinese(obj,val){#}
+{#　　var reg = new RegExp("[\\u4E00-\\u9FFF]+","g");#}
+{#　　if(reg.test(val)){#}
+{#       alert("不能输入汉字！");#}
+{#       var strObj = document.getElementById(obj);#}
+{#       strObj.value = "";#}
+{#       strObj.focus();#}
+{#　　}#}
+{#  }#}
+{#</script>#}
 {% endblock %}

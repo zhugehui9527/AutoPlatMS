@@ -4,18 +4,20 @@
 {% endblock %}
 {% block content %}
 <script>
-{#    debugger;#}
+
     window.onload=init;
     function init() {
-         var box = document.getElementById("id_params");
-        box.style.display='none';
+         var id_params = document.getElementById("id_params");
+        id_params.style.display='none';
+        var id_headers = document.getElementById("id_headers");
+        id_headers.style.display='none';
     }
-    function showhide() {
-        var box = document.getElementById("id_params");
-        if (box.style.display==''){
-            box.style.display='none';
+    function showhide(byid) {
+        var id_params = document.getElementById(byid);
+        if (id_params.style.display==''){
+            id_params.style.display='none';
         }else{
-            box.style.display='';
+            id_params.style.display='';
         }
     }
 
@@ -154,10 +156,23 @@
            <label class="control-label">
                {{ c_form.headers.label_tag }}
            </label>
-              <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title='请求头为字典/json类型，可以不用添加content-type，如无特别需要可以不填'></a>
+              <a action="#" id="help-button" class="fa fa-question-circle-o"   data-toggle="tooltip" title='请求参数下面二选一即可,请求头为字典/json类型，可以不用添加content-type，如无特别需要可以不填'></a>
 
            <div>
-               {{ c_form.headers }}
+               <div class="headers_body" id="id_headers_body" >
+                        <button type="button" id="id_headers_body_a" class="headers-btn" onclick="showhide('id_headers')"  >
+                       <i class="fa fa-plus"> header_body</i></button>
+                       {{ c_form.headers }}
+                   </div>
+
+                    <div class="headers_json" id="id_headers_json">
+                       <button type="button" id="id_headers_json_a" class="headers-btn" onclick="json2str_headers()" >
+                            <i class="fa fa-plus"> header_json</i>
+                        </button>
+                       <div id="urlHeaders" name="urlHeaders">
+                       </div>
+                   </div>
+
            </div>
             {{ c_form.headers.errors }}
         </div>
@@ -168,24 +183,19 @@
                </label>
                <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="请求参数下面二选一即可，如果为json类型params_body请记得带上 { }，如:{'username':'zhangsan'}"></a>
                <div >
-{#                   <button type="button" class="btn btn-default" id="Parameters"  data-toggle="params_json">Parameters</button>#}
-{#                   <button type="button" class="btn btn-default" id="Body_Data" onclick="" data-toggle="params_body">Body Data</button>#}
                    <div class="params_body" id="id_params_body" >
-                        <button type="button" id="id_params_body_a" class="params-btn" onclick="showhide()"  >
+                        <button type="button" id="id_params_body_a" class="params-btn" onclick="showhide('id_params')"  >
                        <i class="fa fa-plus"> params_body</i></button>
                        {{ c_form.params }}
                    </div>
 
                     <div class="params_json" id="id_params_json">
-                       <button type="button" id="id_params_json_a" class="params-btn" onclick="json2str()" >
-                       <i class="fa fa-plus"> Parameters</i>
-
-                   </button>
-                   <div id="urlParameter" name="urlParameter"></div>
+                       <button type="button" id="id_params_json_a" class="params-btn" onclick="json2str_params()" >
+                            <i class="fa fa-plus"> params_json</i>
+                        </button>
+                       <div id="urlParameter" name="urlParameter">
+                       </div>
                    </div>
-
-
-
                </div>
               {{ c_form.params.errors }}
            </div>
@@ -214,39 +224,6 @@
             {{ c_form.expect_res.errors }}
         </div>
 
-{#          <div class="form-group" >#}
-{#           <label class="control-label">#}
-{#               {{ c_form.duration.label_tag }}#}
-{#           </label>#}
-{#           <div>#}
-{#               {{ c_form.duration }}#}
-{#           </div>#}
-{#            {{ c_form.duration.errors }}#}
-{#        </div>#}
-
-{#          <div class="form-group">#}
-{#           <label class="control-label">#}
-{#               {{ c_form.status.label_tag }}#}
-{#           </label>#}
-{##}
-{#           <div>#}
-{#               {{ c_form.status }}#}
-{#           </div>#}
-{#            {{ c_form.status.errors }}#}
-{#        </div>#}
-
-{#          <div class="form-group" style='display:none'>#}
-{#           <label class="control-label">#}
-{#               {{ c_form.fact_res.label_tag }}#}
-{#           </label>#}
-{#           <div>#}
-{##}
-{#                {{ c_form.fact_res }}#}
-{##}
-{##}
-{#           </div>#}
-{#            {{ c_form.fact_res.errors }}#}
-{#        </div>#}
 
           <div class="form-group">
            <label class="control-label">
@@ -274,7 +251,6 @@
 
         <input type="submit" class="btn btn-primary" style="width: 60pt" value="提交" onclick="str2json()">
         <a href="{% url 'case' %}"> <li class="btn btn-primary" style="width: 60pt">返回</li></a>
-{#        &nbsp;&nbsp;<li  id="idc_add" class="btn btn-success" style="width: 60pt" >机房 <i class="fa fa-plus-circle"></i></li>#}
 
           <br>
       </form>
@@ -292,35 +268,18 @@
 <input id="handle_status" value="" hidden="hidden">
 
 <script>
-{#$('#case_add').on('click', function(){#}
-{#    layer.open({#}
-{#    type: 2, // 显示content 内容#}
-{#    title: '添加接口用例',#}
-{#    closeBtn: 1, // 显示关闭按钮#}
-{#    area: ['500px', '450px'], // 显示窗口大小#}
-{#    shadeClose: true, //点击遮罩关闭#}
-{#    content: ['/casemanage/case/add/'],#}
-{#    end:function(){#}
-{#            var handle_status = $("#handle_status").val();#}
-{#            if ( handle_status == '1' ) {#}
-{#                layer.msg('提交成功！',{#}
-{#                    icon: 1, // 成功按钮#}
-{#                    time: 2000 //2秒关闭（如果不配置，默认是3秒）#}
-{#                },function(){#}
-{#                    history.go(0); //history.go(1)前进 history.go(0)刷新 history.go(-1)后退#}
+{#function del_step(obj) {#}
+{#        var tr = obj.parentNode.parentNode;#}
+{#        var tbody = tr.parentNode;#}
+{#        tbody.removeChild(tr);#}
+{#    }#}
+{#$(document).ready(function () {#}
+{#    $("#add_response_body").click(function () {#}
+{#            var newRow = "<tr> <td name='var_name' contenteditable='true'></td><td name='var_remark' contenteditable='true'></td> <td> <button class='btn btn-danger' onclick='del_step(this)'>删除行</button> </td> </tr>";#}
+{#            $("#response_body tr:last").after(newRow);#}
+{#        });#}
 {##}
-{#                });#}
-{#            } else if ( handle_status == '2' ) {#}
-{#                layer.msg('提交失败！',{#}
-{#                    icon: 2, // 失败按钮#}
-{#                    time: 2000 //2秒关闭（如果不配置，默认是3秒）#}
-{#                },function(){#}
-{#                    history.go(0); //history.go(1)前进 history.go(0)刷新 history.go(-1)后退#}
-{#                });#}
-{#            }#}
-{#        }#}
-{#  });#}
-{#});#}
+
 
 // 点击x 后退
 $('#Remove').on('click', function () {
@@ -334,19 +293,29 @@ $('#Remove').on('click', function () {
 <script src="/statics/js/common/request.js" type="text/javascript"></script>
 <script type="text/javascript">
     function str2json() {
-        var data={};
+        var data_param={};
+        var data_header={};
         if($(".paramKey").length){
             for (var i=0;i<$(".paramKey").length;i++){
-                var key_str = $('.paramKey')[i].value;
-                var value1_str = $('.defaultValue')[i].value;
-                data[key_str] = value1_str;
+                var key_str_param = $('.paramKey')[i].value;
+                var value1_str_param = $('.defaultValue')[i].value;
+                data_param[key_str_param] = value1_str_param;
             }
-            console.log(data);
-            $("#id_params").val(JSON.stringify(data));
+            $("#id_params").val(JSON.stringify(data_param));
+            }
+
+
+        if($(".headerKey").length){
+            for (var i=0;i<$(".headerKey").length;i++){
+                var key_str_header = $('.headerKey')[i].value;
+                var value1_str_header = $('.headerValue')[i].value;
+                data_header[key_str_header] = value1_str_header;
+            }
+            $("#id_headers").val(JSON.stringify(data_header));
             }
         }
 
-    function json2str() {
+    function json2str_params() {
         var id_params = $("#id_params").val();
 
         var temp_key = new Array();
@@ -357,7 +326,6 @@ $('#Remove').on('click', function () {
             } catch (err){
                 alert("【 params_body 】中须为json数据才能编辑");
             }
-
             // 遍历json
             for (var i in id_params_json){
                 temp_key.push(i);
@@ -373,9 +341,36 @@ $('#Remove').on('click', function () {
         }else {
             addRequestParams();
         }
+    }
 
 
 
+    function json2str_headers() {
+        var id_headers = $("#id_headers").val();
+
+        var temp_key = new Array();
+        var temp_value = new Array();
+        if(id_headers){
+            try{
+                var id_headers_json = JSON.parse(id_headers);
+            } catch (err){
+                alert("【 header_body 】中须为json数据才能编辑");
+            }
+            // 遍历json
+            for (var i in id_headers_json){
+                temp_key.push(i);
+                temp_value.push(id_headers_json[i]);
+            }
+            //
+            for(var k=0; k< temp_key.length;k++){
+                addRequestHeaders();
+                $('.headerKey')[k].value = temp_key[k];
+                $('.headerValue')[k].value = temp_value[k];
+            }
+            $("#id_headers_json_a").attr("disabled", true);
+        }else {
+            addRequestHeaders();
+        }
     }
 
 </script>

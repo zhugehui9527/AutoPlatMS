@@ -17,9 +17,10 @@
       </a>
         <ul class="nav navbar-nav">
                 <li style="font-size: medium" id="job_list"><a href="{% url 'job_list' %}"><b>定时任务</b></a></li>
+                <li style="font-size: medium" id="job_email_list"><a href="{% url 'job_email_list' %}"><b>邮件管理</b></a></li>
 {#                <li style="font-size: medium" id="ansible"><a href="{% url 'ansible' %}"><b>Ansible</b></a></li>#}
 {#                <li class="divider"></li>#}
-                <li style="font-size: medium" id="shell"><a href="{% url 'job_list' %}"><b>Shell</b></a></li>
+{#                <li style="font-size: medium" id="shell"><a href="{% url 'job_list' %}"><b>Shell</b></a></li>#}
           </ul>
       <!-- Navbar Right Menu -->
       {% include 'navbar-custom-menu.html' %}

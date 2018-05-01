@@ -13,9 +13,15 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 from __future__ import absolute_import
 import os
 from celery import platforms
+import sys
+if sys.version < '3':
+    import ConfigParser
+else:
+    import configparser as ConfigParser
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -30,8 +36,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', ]
 
 
-# to get root privilege
-platforms.C_FORCE_ROOT = True
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,10 +45,10 @@ INSTALLED_APPS = [
     'navi',
     'cmdb',
     'case',
+    'config',
     'monitor',
+    'mocks',
     'rest_framework',
-    'django_celery_results',
-    # 'django_celery_beat',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,10 +58,18 @@ INSTALLED_APPS = [
 
 ]
 
-INSTALLED_APPS += ("djcelery", )
+INSTALLED_APPS += (
+                    'djcelery',
+                    'djcelery_email',
+                    'rest_framework.authtoken',
+                    # 'django_celery_results',
+                    # 'django_celery_beat',
+                   )
+# django-celery 3.2.2 has requirement celery<4.0,>=3.1.15
 import djcelery
 djcelery.setup_loader()
 
+# celery_taskmeta 和 djcelery_taskmeta 。 第一个是保存结果，第二个在管理中显示
 
 # AUTH_USER_MODEL = 'users.User'
 # USERS_REGISTRATION_OPEN = True
@@ -105,7 +118,7 @@ ROOT_URLCONF = 'AutoPlatMS.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), ]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -120,7 +133,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'AutoPlatMS.wsgi.application'
-
+config = ConfigParser.ConfigParser()
+config.read(os.path.join(BASE_DIR, 'AutoPlatMS.conf'))
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -132,18 +146,48 @@ WSGI_APPLICATION = 'AutoPlatMS.wsgi.application'
 #     }
 # }
 
-DATABASES = {
+# DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': 'atms',
+#             'USER': 'root',
+#             'PASSWORD': '123456',
+#             'HOST': '127.0.0.1',
+#             'PORT': '3306',
+#         }
+#     }
+
+DATABASES = {}
+if config.get('db', 'engine') == 'mysql':
+    DB_HOST = config.get('db', 'host')
+    DB_PORT = config.getint('db', 'port')
+    DB_USER = config.get('db', 'user')
+    DB_PASSWORD = config.get('db', 'password')
+    DB_DATABASE = config.get('db', 'database')
+    DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'atms',
-            'USER': 'root',
-            'PASSWORD': '123456',
-            'HOST': '127.0.0.1',
-            'PORT': '3306',
+            'NAME': DB_DATABASE,
+            'USER': DB_USER,
+            'PASSWORD': DB_PASSWORD,
+            'HOST': DB_HOST,
+            'PORT': DB_PORT,
         }
     }
-
-
+elif config.get('db', 'engine') == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': config.get('db', 'database'),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -194,12 +238,17 @@ STATICFILES_DIRS = (
 # )
 
 REST_FRAMEWORK = {
+    # 使用Django的标准`django.contrib.auth`权限管理类,
+
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated', # all view auth
+         # 或者为尚未认证的用户，赋予只读权限.
+        # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication', # for restful service
-    ),
+    # 解决 "detail": "Authentication credentials were not provided." 注释以下代码
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'rest_framework.authentication.TokenAuthentication', # for restful service
+    # ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser', # for json parser
     )
@@ -208,41 +257,166 @@ REST_FRAMEWORK = {
 
 AUTH_USER_MODEL = 'accounts.UserInfo'
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django.db.backends': {
-            'handlers': ['console'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django.db.backends': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG' if DEBUG else 'INFO',
+#             # 'level': config.get('log', 'log_level'),
+#         },
+#     },
+# }
 
+output = os.popen('celery --version').read()
+
+if '3.' in output:
+    # CELERYBEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
+    CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+    BROKER_URL = 'redis://localhost:6379/0'
+    # BROKER_URL = 'django://localhost:8000/'
+else:
+    # CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
+    CELERY_BEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+    CELERY_BROKER_URL = 'redis://localhost:6379/0'  # for 4.1.0
 # 参考配置：http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-beat_scheduler
 # http://docs.celeryproject.org/en/latest/django/first-steps-with-django.html
-# 结果需要存储到数据库中 'django-db'
+# 结果需要存储到数据库中 'django-db' , Configure Celery to use the django-celery-results backend
+#  'djcelery.backends.database:DatabaseBackend'
+# CELERY_BEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+CELERY_RESULT_BACKEND = 'djcelery.backends.database:DatabaseBackend'
+# # 使用djcelery 后的配置celery djcelery.schedulers.DatabaseScheduler
 
+# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
+# CELERY_RESULT_BACKEND = 'django-db'  # 需要添加应用：django_celery_results
+# 使用djcelery 后的配置celery
+# CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'  # for 4.1.0
 # BROKER_URL = 'redis://localhost:6379/0'
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'django-db'
-ELERY_ACCEPT_CONTENT = ['json']
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'  # for 4.1.0
+# CELERY_RESULT_BACKEND = 'db+mysql://root:123456@127.0.0.1:3306/atms'
+CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 # 'Asia/Shanghai' 时区严重影响定时任务执行，
 # 时区为UTC或者Europe/London执行速度过快
 # CELERY_ENABLE_UTC = False
 # CELERY_TIMEZONE = 'Europe/London'
+CELERY_TIMEZONE = 'Asia/Shanghai' # 对celery 4.10 ，任务不会执行，需要注释
 # 定义每个worker执行多少个任务后才会自我销毁重建
 CELERY_MAX_TASKS_PER_CHILD = 4
-# # 调用数据库计划任务
-# CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-# 使用djcelery 后的配置celery
-CELERY_BEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
-CELERY_LOG_LEVEL = 'INFO'
+# CELERY_IGNORE_RESULT = True
+CELERY_LOG_LEVEL = 'DEBUG'
+# CELERY_TASK_IGNORE_RESULT = True
+CELERYD_FORCE_EXECV = True  # 防止死锁
+# CELERY_ALWAYS_EAGER=True
+CELERY_TASK_RESULT_EXPIRES = 18000  # celery任务结果有效期
+CELERY_SEND_TASK_ERROR_EMAILS = False # celery接收错误邮件
+ADMINS = (
+    ("*****", "373743261@qq.com"),      #celery接收错误邮件地址
+)
+
+
+# email settings
+# EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_SSL = True
+# 每个邮箱都有不同的服务器 163邮箱为smtp.163.com，qq邮箱为smtp.qq.com
+EMAIL_HOST = 'smtp.163.com'
+EMAIL_PORT = 465
+
+# 发送源即发送邮件的邮箱
+EMAIL_HOST_USER = 'anydoor_jeff@163.com'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+# 在邮箱中设置的客户端授权密码
+# 如果是aliyun邮箱这个是你账号的密码，如果是163/126邮箱或qq邮箱这个是授权码，
+# 163/126的授权码会在你开通SMTP服务时自行设置，qq邮箱会分配一个授权码。
+EMAIL_HOST_PASSWORD = 'zhang6246593'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'standard': {
+            'format': '%(asctime)s [%(name)s:%(lineno)d] [%(module)s:%(funcName)s] [%(levelname)s]- %(message)s'}
+        # 日志格式
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        }, # 针对 DEBUG = True 的情况
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
+        },
+        'default': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'backend/log/all.log'),
+            'maxBytes': 1024 * 1024 * 100,
+            'backupCount': 5,
+            'formatter': 'standard',
+        },
+        'console': {
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'standard'
+        },
+        'request_handler': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'backend/log/script.log'),
+            'maxBytes': 1024 * 1024 * 100,
+            'backupCount': 5,
+            'formatter': 'standard',
+        },
+        'scripts_handler': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'backend/log/script.log'),
+            'maxBytes': 1024 * 1024 * 100,
+            'backupCount': 5,
+            'formatter': 'standard',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['default', 'console'],
+            'level': 'INFO',
+            'propagate': False # 是否继承父类的log信息
+        },
+        'AutoPlatMS.app': {
+            'handlers': ['default', 'console'],
+            'level': 'DEBUG',
+            'propagate': True
+        },
+        'django.request': {
+            'handlers': ['request_handler'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
+        'AutoPlatMS': {
+            'handlers': ['scripts_handler', 'console'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
+        'scripts': {
+            'handlers': ['scripts_handler', 'console'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
+    }
+}
+
 

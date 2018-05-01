@@ -5,17 +5,20 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <link href="//cdn.staticfile.org/twitter-bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet">
+{#        <link href="//cdn.staticfile.org/twitter-bootstrap/3.0.1/css/bootstrap.min.css" rel="stylesheet">#}
+        <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <title>自动化平台管理系统</title>
 
     </head>
-    <body >
+    <body background="{% static 'images/bg.jpg' %}">
+{#        <div class="fullscreen landing parallax" style="background-image:url({% static "images/bg.jpg" %});"#}
+{#     data-img-width="2000" data-img-height="1333" data-diff="100">#}
         <div class="login-box">
             <div class="login-logo">
                 <a href="/">
-                    <b>自动化平台管理系统</b>
+                    <b style="color: #fafafa">自动化平台管理系统</b>
                 </a>
             </div>
             <div class="box box-info">
@@ -40,6 +43,7 @@
                                 </div>
                             </div>
                         {% endfor %}
+
                         <div class="box-footer">
                             <input type="hidden" name="next" value="{{ next }}" />
                             <button style="width: 340px;" type="submit" class="btn btn-info pull-right">
@@ -53,6 +57,7 @@
             </div>
 
         </div>
+{#        </div>#}
 
     </body>
 </html>

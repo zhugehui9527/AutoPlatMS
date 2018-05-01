@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import url, include
-from . import jobs, views
+from . import jobs, views, api
 
 urlpatterns = [
     url(r'^job/list/$', jobs.index, name='job_list'),
@@ -20,5 +20,13 @@ urlpatterns = [
     url(r'^result/del/$', jobs.job_result_del, name='job_result_del'),
     url(r'^job/backend/$', jobs.job_backend, name='job_backend'),
     url(r'^job/backend/task/(?P<name>\w+)/(?P<action>\w+)$', jobs.job_backend_task, name='job_backend_task'),
-    url(r'^job/view/$', views.task_test, name='job_view')
+    url(r'^job/getstate/(?P<udid>[-\w]+)/$', api.get_task_state, name='get_task_state'),
+    url(r'^job/state/$', api.get_job_state, name='get_job_state'),
+    url(r'^mail/list/$', jobs.email_list, name='job_email_list'),
+    url(r'^mail/add/$', jobs.email_add, name='job_email_add'),
+    url(r'^mail/del/(?P<ids>\d+)/$$', jobs.email_del, name='job_email_del'),
+    url(r'^mail/edit/(?P<ids>\d+)/$', jobs.email_edit, name='job_email_edit'),
+    url(r'^job/runJobGroupCase/(?P<ids>\d+)/$', api.run_job_case_group, name='run_job_case_group'),
+    url(r'^job/report/(?P<ids>\d+)/$', api.show_result_report, name='show_result_report'),
+    url(r'^job/report/latest/(?P<ids>\d+)/$', api.get_latest_report, name='get_latest_report'),
 ]

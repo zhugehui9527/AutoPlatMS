@@ -1,126 +1,156 @@
 # -*- coding:utf-8 -*-
 from __future__ import absolute_import, unicode_literals
 
-from celery import shared_task, task
+from celery import shared_task, Task
+from AutoPlatMS.celery_init import app
+from .api import send_mail
+from django.core import mail
+# from djcelery_email.tasks import send_email
+from django.template import loader, Context
+# from case.api import get_object, api_request
+# from django.shortcuts import render, HttpResponse
+# from case.models import CaseGroup, Case, PROTOCOL, REQUEST_TYPE
+# import datetime
+# import requests
+import logging
+logger = logging.getLogger(__name__)
 
-from case.api import get_object, api_request
-from django.shortcuts import render, HttpResponse
-from case.models import CaseGroup, Case, PROTOCOL, REQUEST_TYPE
-import datetime
-import requests
+
+class MyTask(Task):
+    '''任务回调函数'''
+    def on_success(self, retval, task_id, args, kwargs):
+        '''
+        :param retval:  任务返回值
+        :param task_id:  任务task_id
+        :param args: 任务参数
+        :param kwargs: 任务参数名
+        :return: The return value of this handler is ignored.
+        '''
+        print('task success: {0}, task_id:{1},args:{2} '.format(retval, task_id, args))
+        # super(MyTask, self).update_state(task_id=task_id, state='SUCCESS')
+        # super(MyTask, self).on_success(retval, task_id, args, kwargs)
+        # import time
+        # time.sleep(5)
+        # from .api import send_task_mail
+        # send_task_mail(task_id)
+        # print('发送邮件完成')
+        return super(MyTask, self).on_success(retval, task_id, args, kwargs)
 
 
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        '''
+        :param exc: 任务失败抛出的异常
+        :param task_id: 任务task_id
+        :param args: 任务参数
+        :param kwargs: 任务参数名
+        :param einfo:  ExceptionInfo instance, containing the traceback.
+        :return: The return value of this handler is ignored.
+        '''
+        print('task fail, reason: {0},task_id:{1},args:{2}, kwargs:{3},  einfo:{4}'.format(exc, task_id, args, kwargs, einfo))
+        import time
+        time.sleep(3)
+        from .api import send_task_mail
+        send_task_mail(task_id)
+        return super(MyTask, self).on_failure(exc, task_id, args, kwargs, einfo)
 
-@shared_task
+    def send_error_email(self, context, exc, **kwargs):
+        print('context: {0}, exc:{1}'.format(context, exc))
+
+        return super(MyTask, self).send_error_email(context, exc, **kwargs)
+
+    def after_return(self, status, retval, task_id, args, kwargs, einfo):
+        '''
+
+        :param status:
+        :param retval:
+        :param task_id:
+        :param args:
+        :param kwargs:
+        :param einfo:
+        :return:
+        '''
+        print('after_return, status: {0},task_id:{1},args:{2}, kwargs:{3},  einfo:{4}, id:{5}'.format(status,
+         task_id, args, kwargs, einfo, self.request.id))
+        import time
+        time.sleep(3)
+        from .api import send_task_mail
+        send_task_mail(task_id)
+        return super(MyTask, self).after_return(status, retval, task_id, args, kwargs, einfo)
+
+
+@app.task
 def test():
-    print "test ...."
+    print("test ....")
 
 
-
-@shared_task
-def cmmand(*args):
-    if isinstance(args, tuple):
+@shared_task(base=MyTask)
+def runCaseGroup(*args):
+    '''
+    运行接口任务
+    :param args: 用例集合名称
+    :return:
+    '''
+    from case.api import run_group_name
+    if isinstance(args, tuple) or isinstance(args, list):
         for arg in args:
-            cases = Case.objects.filter(case_group__name=arg)
-            REQUEST_TYPE_DICT = dict(REQUEST_TYPE)
-            if len(cases):
-                for case in cases:
-                    if case.is_active == 'False':
-                        print (u'请先启用此接口')
-                        continue
-                    headers = {}
-                    case_model = get_object(Case, id=case.id)
-                    request_type = case_model.request_type
-                    request_method_int = case_model.request_method
-                    case_is_active = case_model.is_active
-                    case_group = CaseGroup.objects.get(name=case_model.case_group)
-                    path = case_model.path
-                    protocol = case_model.protocol or case_group.protocol
-                    ip = case_model.ip or case_group.ip
-                    port = case_model.port or case_group.port
-
-                    if protocol == PROTOCOL[2][0]:  # PROTOCOL[2][0] == 2
-                        url = str(PROTOCOL[2][1]) + '://' + str(ip) + ':' + str(port) + str(path)
-
-                    else:
-                        url = str(PROTOCOL[1][1]) + '://' + str(ip) + ':' + str(port) + str(path)
-                    # case_is_active == 1 启用 ，2 禁用
-                    if case_is_active == 1:
-                        if request_method_int == 2:
-                            request_method = 'POST'
-
-                        elif request_method_int == 1:
-                            request_method = 'GET'
-
-                        # 更新content-type
-                        headers['content-type'] = REQUEST_TYPE_DICT[request_type]
-
-                        try:
-                            # 合并字典
-                            headers = dict(headers, **(eval(case_model.headers)))
-                        except:
-                            headers = headers
-
-                        try:
-                            params = eval(case_model.params)
-                        except:
-                            params = case_model.params
-
-                        try:
-                            t1 = datetime.datetime.now()
-                            s = requests.session()
-                            res = api_request(session=s, method=request_method, url=url, params=params, headers=headers)
-                            res_status, res_response_message, res_rheaders, res_relapsed = res
-                            # json 数据显示格式化
-                            # loads = demjson.decode(res_response_message)
-                            # res_response_message = json.dumps(loads, indent=4, sort_keys=False, ensure_ascii=False)
-                            case_model.fact_res = res_response_message
-                            case_model.duration = res_relapsed
-                            case_model.response_code = res_status
-                            case_model.response_header = res_rheaders
-                            if case_model.expect_res in res_response_message:
-                                case_model.status = 2
-                            else:
-                                case_model.status = 3
-                            case_model.save()
-                        except Exception as e:
-                            case_model.status = 4
-                            case_model.fact_res = e
-                            case_model.duration = datetime.datetime.now() - t1
-                            case_model.save()
-
-            else:
-                return HttpResponse(u'请添加接口')
+            run_group_name(arg)
+        return '%s run finished' % args
 
 
-
-@shared_task
+@shared_task(base=MyTask)
 def add(x, y):
-    return x + y
+    z = x + y
+    return z
 
-
-@shared_task
+@shared_task(base=MyTask)
 def mul(x, y):
     return x * y
 
-@shared_task
+@shared_task(base=MyTask)
 def xsum(numbers):
     return sum(numbers)
 
-@shared_task
-def send(arg):
+@shared_task(base=MyTask)
+def send_msg(arg):
    return arg
 
 
-@shared_task
+@shared_task(base=MyTask)
 def func_name():
-    print '测试成功'
+    print('测试成功')
 
 
-import subprocess
-@shared_task
+@shared_task(base=MyTask)
 def hostname():
+    import subprocess
     return subprocess.check_output(['hostname'])
-   
+
+
+@shared_task(base=MyTask)
+def sendmail(subject, message, from_email, recipient_list, to_cc=None, to_bcc=None, **kwrags):
+    '''
+    发送邮件
+    :param subject:
+    :param message:
+    :param from_email:
+    :param recipient_list:
+    :param to_cc:
+    :param to_bcc:
+    :param kwrags:
+    :return:
+    '''
+    try:
+        # 使用celery并发处理邮件发送的任务
+        logger.info("\n开始发送邮件")
+        # 方法1
+        # mail.send_mail(subject, message, from_email, [recipient_list], **kwrags)
+        # 方法2 发送html邮件
+
+        send_mail(subject, message, from_email, recipient_list, to_cc=None, to_bcc=None, **kwrags)
+        logger.info("邮件发送成功")
+        return 'send mail success!'
+    except Exception as e:
+        logger.error("邮件发送失败: {}".format(e))
+        raise e
 
 

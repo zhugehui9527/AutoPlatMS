@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block self_head_css_js %}
+    <script src="/statics/layer/layer.js"></script>
+{% endblock %}
+{% block content %}
+<script>
+
+    window.onload=init;
+    function init() {
+         var id_params = document.getElementById("id_params");
+{#        id_params.style.display='none';#}
+        var id_headers = document.getElementById("id_headers");
+{#        id_headers.style.display='none';#}
+    }
+    function showhide(byid) {
+        var id_params = document.getElementById(byid);
+        if (id_params.style.display==''){
+            id_params.style.display='none';
+        }else{
+            id_params.style.display='';
+        }
+    }
+
+
+</script>
+
+
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="alert alert-info alert-dismissible" style="display: {{ display_control }};">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <h4>{{ tips }}</h4>
+        </div>
+    </section>
+
+    <!-- Main content -->
+
+    <section class="content">
+
+      <!-- Default box -->
+      <div class="box">
+        <div class="box-header with-border">
+          <h3 class="box-title">添加接口</h3>
+          <div class="box-tools pull-right">
+            <button type="button" class="btn btn-box-tool" data-widget="remove" data-toggle="tooltip" title="Remove" id="Remove">
+              <i class="fa fa-times"></i></button>
+          </div>
+        </div>
+        <div class="box-body">
+      <form action="{% url 'mock_add' %}" method="post">
+        {% csrf_token %}
+        {{ mock_form.as_p }}
+
+        <input type="submit" class="btn btn-primary" style="width: 60pt" value="提交" onclick="str2json()">
+        <a href="{% url 'mock_index' %}"> <li class="btn btn-primary" style="width: 60pt">返回</li></a>
+          <br>
+      </form>
+        </div>
+        <!-- /.box-body -->
+        <div class="box-footer">
+          <i class="fa fa-info-circle"></i> 请勿重复添加条目。
+        </div>
+        <!-- /.box-footer-->
+      </div>
+      <!-- /.box -->
+    </section>
+
+  </div>
+<input id="handle_status" value="" hidden="hidden">
+
+<script>
+
+// 点击x 后退
+$('#Remove').on('click', function () {
+    //后退
+    history.go(-1);
+});
+
+
+</script>
+
+<script src="/statics/js/common/request.js" type="text/javascript"></script>
+<script type="text/javascript">
+    function str2json() {
+        var data_param={};
+        var data_header={};
+        if($(".paramKey").length){
+            for (var i=0;i<$(".paramKey").length;i++){
+                var key_str_param = $('.paramKey')[i].value;
+                var value1_str_param = $('.defaultValue')[i].value;
+                data_param[key_str_param] = value1_str_param;
+            }
+            $("#id_params").val(JSON.stringify(data_param));
+            }
+
+
+        if($(".headerKey").length){
+            for (var i=0;i<$(".headerKey").length;i++){
+                var key_str_header = $('.headerKey')[i].value;
+                var value1_str_header = $('.headerValue')[i].value;
+                data_header[key_str_header] = value1_str_header;
+            }
+            $("#id_headers").val(JSON.stringify(data_header));
+            }
+        }
+
+    function json2str_params() {
+        var id_params = $("#id_params").val();
+
+        var temp_key = new Array();
+        var temp_value = new Array();
+        if(id_params){
+            try{
+                var id_params_json = JSON.parse(id_params);
+            } catch (err){
+                alert("【 params_body 】中须为json数据才能编辑");
+            }
+            // 遍历json
+            for (var i in id_params_json){
+                temp_key.push(i);
+                temp_value.push(id_params_json[i]);
+            }
+            //
+            for(var k=0; k< temp_key.length;k++){
+                addRequestParams();
+                $('.paramKey')[k].value = temp_key[k];
+                $('.defaultValue')[k].value = temp_value[k];
+            }
+            $("#id_params_json_a").attr("disabled", true);
+        }else {
+            addRequestParams();
+        }
+    }
+
+
+
+    function json2str_headers() {
+        var id_headers = $("#id_headers").val();
+
+        var temp_key = new Array();
+        var temp_value = new Array();
+        if(id_headers){
+            try{
+                var id_headers_json = JSON.parse(id_headers);
+            } catch (err){
+                alert("【 params_body 】中须为json数据才能编辑");
+            }
+            // 遍历json
+            for (var i in id_headers_json){
+                temp_key.push(i);
+                temp_value.push(id_headers_json[i]);
+            }
+            //
+            for(var k=0; k< temp_key.length;k++){
+                addRequestHeaders();
+                $('.headerKey')[k].value = temp_key[k];
+                $('.headerValue')[k].value = temp_value[k];
+            }
+            $("#id_headers_json_a").attr("disabled", true);
+        }else {
+            addRequestHeaders();
+        }
+    }
+
+</script>
+{% endblock %}

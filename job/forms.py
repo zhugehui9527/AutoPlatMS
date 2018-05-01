@@ -7,11 +7,16 @@ from django.utils.translation import ugettext_lazy as _
 
 from celery import current_app
 from celery.utils import cached_property
-from kombu.utils.json import loads
-from djcelery.models import PeriodicTask, IntervalSchedule, CrontabSchedule, TaskState
+try:
+    from kombu.utils.json import loads
+except ImportError:
+    from json import loads
+from djcelery.models import PeriodicTask, IntervalSchedule, CrontabSchedule
 # from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
+# from django_celery_results.models import TaskResult
+from djcelery.models import TaskState as TaskResult
 
-from django_celery_results.models import TaskResult
+from .models import EmailManager
 
 try:
     from django.utils.encoding import force_text
@@ -60,14 +65,20 @@ class PeriodicTaskForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PeriodicTaskForm, self).__init__(*args, **kwargs)
         self.fields['expires'].label = u'过期时间'
+        self.fields['args'].label = u'任务参数'
+        self.fields['description'].label = u'描述'
+        self.fields['name'].label = u'任务名称'
+        self.fields['interval'].label = u'定时间隔'
+        self.fields['crontab'].label = u'定时周期'
+        self.fields['enabled'].label = u'是否启用'
 
     regtask = TaskChoiceField(
-        label=_('Task (registered)'),
+        label=_('选择模板'),
         required=False,
     )
 
     task = forms.CharField(
-        label=_('Task (custom)'),
+        label=_('模板名称'),
         required=False,
         max_length=200,
         widget=forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;'})
@@ -78,13 +89,18 @@ class PeriodicTaskForm(forms.ModelForm):
         required=True,
         max_length=200,
         initial='',
-        widget=forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;',
-                                      'placeholder': u'{"group":"your_groupname","name":"scritps_name or command"}'})
+        widget=forms.TextInput(attrs={'class': 'form-control',
+                                      'style': 'width:450px;',
+                                      'placeholder': u'{"group":"your_groupname","name":"scritps_name or command"}',
+                                      'value': '{}'}
+                               ,)
     )
+
 
     class Meta:
         model = PeriodicTask
-        exclude = ('id',)
+        exclude = ('id', 'queue', 'exchange', 'routing_key', 'solar')
+        ordering = ['-date_changed']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;'}),
             'args': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;'}),
@@ -98,6 +114,7 @@ class PeriodicTaskForm(forms.ModelForm):
             'expires': forms.DateTimeInput(attrs={'class': 'form-control', 'style': 'width:450px;',
                                                   'placeholder': u'时间格式：2017-01-01 00:00:00'}),
             'last_run_at': forms.DateTimeInput(attrs={'class': 'form-control', 'style': 'width:450px;'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'style': 'width:450px;'}),
         }
 
     def clean(self):
@@ -145,4 +162,28 @@ class TaskResultForm(forms.ModelForm):
     class Meta:
         model = TaskResult
         exclude = ('id',)
+        # ordering = ['-tstamp']
+
+
+class EmailMangerForm(forms.ModelForm):
+    '''邮件管理表单'''
+    class Meta:
+        model = EmailManager
+        exclude = ('id',)
+        widgets = {
+            'email_subiect': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;'}),
+            'email_message': forms.Textarea(attrs={'class': 'form-control', 'style': 'width:450px;'}),
+            'email_to': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;',
+                                               'placeholder': '多个收件人逗号隔开'}),
+            'email_cc': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;',
+                                               'placeholder': '多个收件人逗号隔开'}),
+            'email_bcc': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;',
+                                                'placeholder': '多个收件人逗号隔开'}),
+            'email_enbale': forms.Select(choices=((True, u'启用'), (False, u'禁用')),
+                                    attrs={'class': 'form-control', 'style': 'width:450px;'}),
+            'eamil_config': forms.Select(attrs={'class': 'form-control', 'style': 'width:450px;'}),
+            'email_periodictask': forms.Select(attrs={'class': 'form-control', 'style': 'width:450px;'}),
+
+        }
+
 

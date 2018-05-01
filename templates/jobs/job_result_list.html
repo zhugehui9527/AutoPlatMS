@@ -15,10 +15,10 @@
              <a href="{% url 'job_list' %}"><li class="btn btn-default .btn-flat "><b>任务列表</b></li></a>
         </div>
         <div class="btn-group btn-group-lg">
-             <a href="{% url 'job_interval_list' %}"><li class="btn btn-default .btn-flat " ><b>Interval</b></li></a>
+             <a href="{% url 'job_interval_list' %}"><li class="btn btn-default .btn-flat " ><b>定时间隔</b></li></a>
         </div>
         <div class="btn-group btn-group-lg">
-             <a href="{% url 'job_crontab_list' %}"><li class="btn btn-default .btn-flat" ><b>Crontab</b></li></a>
+             <a href="{% url 'job_crontab_list' %}"><li class="btn btn-default .btn-flat" ><b>定时周期</b></li></a>
         </div>
         <div class="btn-group btn-group-lg">
              <a href="{% url 'job_result_list' %}"><li class="btn btn-default .btn-flat active" ><b>任务结果</b></li></a>
@@ -30,6 +30,9 @@
                     {% csrf_token %}
             <div class="box box-info">
                 <div class="box-header">
+                    <div class="btn-group">
+						 <a id="del_all"><li class="btn btn-danger" ><b>删除全部</b></li></a>
+                    </div>
                 </div>
 
                 <!-- /.box-header -->
@@ -40,39 +43,42 @@
                             <th class="nosort">
                                 <input type="checkbox" onclick="checkAll(this, 'item1');" />
                             </th>
-                                     <th>任务ID</th>
+                                    <th>ID</th>
+                                    <th>任务名称</th>
+{#                                     <th>任务ID</th>#}
+
                                     <th>任务状态</th>
-                                    <th>任务指令</th>
+{#                                    <th>任务指令</th>#}
                                     <th>完成时间</th>
-                                    <th>任务结果</th>
-                                    <th>任务异常</th>
+                                    <th>执行耗时(秒)</th>
+                                    <th>结果信息</th>
+                                    <th>异常信息</th>
+{#                                    <th>查看报告</th>#}
                                 </tr>
                             </thead>
                             <tbody>
-{#                                {% if result_info %}#}
+
                                     {% for result in result_info %}
                                         <tr class="even gradeA">
                                             <td><input type="checkbox" id="u_id" class="item1" value="{{ result.id }}" name="tid_check" /></td>
-                                            <td><a href="#"><li style="list-style-type:none" onclick="return tanchu(this.value)" value="{{ result.id }}"> {{ result.task_id }}</li></a></td>
-                                            <td>{{ result.status }}</td>
-                                            <td><div >{{ result.task_kwargs }}</div></td>
-                                            <td>{{ result.date_done |date:"Y-m-d H:i:s"  }}</td>
-                                            {% if  result.result %}
-                                                <td><div style="overflow-y:scroll;width: 200px;height: 100px;">{{ result.result }}</div></td>
-                                            {% else %}
-                                                <td>{{ result.result }}</td>
-                                            {% endif %}
+                                            <td>{{ result.id }}</td>
+                                            <td><a href="#"><li style="list-style-type:none" onclick="return tanchu(this.value)" value="{{ result.id }}"> {{ result.name }}</li></a></td>
+
+                                            <td>{{ result.state }}</td>
+{#                                            <td>{{ result.status }}</td>#}
+{#                                            <td>{{ result.date_done |date:"Y-m-d H:i:s" }}</td>#}
+                                            <td>{{ result.tstamp |date:"Y-m-d H:i:s"  }}</td>
+                                            <td>{{ result.runtime|floatformat:3 }}</td>
+                                            <td><div>{{ result.result }}</div></td>
                                             {% if  result.traceback %}
                                                 <td><div style="overflow-y:scroll;width: 200px;height: 100px;">{{ result.traceback }}</div></td>
                                             {% else %}
                                                 <td>{{ result.traceback }}</td>
                                             {% endif %}
+{#                                            <td><a href="{% url 'show_result_report' result.id %}">报告</a> </td>#}
 
                                         </tr>
                                     {% endfor %}
-{#                                {% else %}#}
-{#                                    <p>暂无数据</p>#}
-{#                                {% endif %}#}
                             </tbody>
                   </table>
                     <div class="btn-group">
@@ -106,6 +112,22 @@ function checkSubmit() {
     }
 }
 </script>
+
+<script>
+$('#del_all').click(function () {
+        if (confirm("全部删除后，所有结果将都不能查看，确定全部删除?")) {
+            $.ajax({
+                type: "post",
+                data: { csrfmiddlewaretoken: '{{ csrf_token }}'},
+                url: "{% url 'job_result_del' %}?delete=all",
+                success: function () {
+                    parent.location.reload();
+                }
+            });
+        }
+    });
+</script>
+
 <script>
 function tanchu(n){
   layer.open({

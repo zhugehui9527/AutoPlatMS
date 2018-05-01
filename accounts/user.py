@@ -3,17 +3,22 @@ from django.shortcuts import render, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import auth
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 from django.template.context import RequestContext
-from forms import LoginUserForm, ChangePasswordForm, AddUserForm, EditUserForm
-from permission import permission_verify
+from .forms import LoginUserForm, ChangePasswordForm, AddUserForm,EditUserForm
+
+from .permission import permission_verify
 
 
 def login(request):
+
     if request.user.is_authenticated():
         return HttpResponseRedirect('/')
 
-    if request.method == 'GET' and request.GET.has_key('next'):
+    if request.method == 'GET':
         next_page = request.GET['next']
     else:
         next_page = '/'
@@ -136,28 +141,3 @@ def user_edit(request, ids):
     else:
         form = EditUserForm(instance=user)
     return render(request, 'accounts/user_edit.html', locals())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
