@@ -6,13 +6,13 @@
 <script>
     window.onload=init;
     function init() {
-        showhide(2);
+        showhide();
     }
-    function showhide(n) {
+    function showhide() {
         var box = document.getElementById("group");
         box.className="active";
-        var box = document.getElementById("mock");
-        box.className="active";
+        var mock_manager = document.getElementById("mock_manager");
+        mock_manager.className="active";
     }
 </script>
 
@@ -52,15 +52,4 @@
     </section>
 
   </div>
-{#<script language="javascript" type="text/javascript">#}
-{#  function CheckChinese(obj,val){#}
-{#　　var reg = new RegExp("[\\u4E00-\\u9FFF]+","g");#}
-{#　　if(reg.test(val)){#}
-{#       alert("不能输入汉字！");#}
-{#       var strObj = document.getElementById(obj);#}
-{#       strObj.value = "";#}
-{#       strObj.focus();#}
-{#　　}#}
-{#  }#}
-{#</script>#}
 {% endblock %}

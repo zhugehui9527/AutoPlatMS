@@ -7,18 +7,25 @@
 
     window.onload=init;
     function init() {
-         var id_params = document.getElementById("id_params");
-        id_params.style.display='none';
-        var id_headers = document.getElementById("id_headers");
-        id_headers.style.display='none';
+        showhide();
+        document.getElementById('id_headers').style.display='none';
+        document.getElementById('id_params').style.display='none';
     }
-    function showhide(byid) {
+    function showhide() {
+        var box1 = document.getElementById("case_manager");
+        box1.className="active";
+        var box2 = document.getElementById("case");
+        box2.className="active";
+    }
+    function showhide2(byid) {
         var id_params = document.getElementById(byid);
-        if (id_params.style.display==''){
-            id_params.style.display='none';
-        }else{
+        if (id_params.style.display){
             id_params.style.display='';
+        }else {
+            id_params.style.display='none';
         }
+
+
     }
 
 
@@ -160,7 +167,7 @@
 
            <div>
                <div class="headers_body" id="id_headers_body" >
-                        <button type="button" id="id_headers_body_a" class="headers-btn" onclick="showhide('id_headers')"  >
+                        <button type="button" id="id_headers_body_a" class="headers-btn" onclick="showhide2('id_headers')"  >
                        <i class="fa fa-plus"> header_body</i></button>
                        {{ c_form.headers }}
                    </div>
@@ -184,7 +191,7 @@
                <a action="#" id="help-button" class="fa fa-question-circle-o"  data-toggle="tooltip" title="请求参数下面二选一即可，如果为json类型params_body请记得带上 { }，如:{'username':'zhangsan'}"></a>
                <div >
                    <div class="params_body" id="id_params_body" >
-                        <button type="button" id="id_params_body_a" class="params-btn" onclick="showhide('id_params')"  >
+                        <button type="button" id="id_params_body_a" class="params-btn" onclick="showhide2('id_params')"  >
                        <i class="fa fa-plus"> params_body</i></button>
                        {{ c_form.params }}
                    </div>

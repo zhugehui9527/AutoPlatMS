@@ -14,9 +14,9 @@
 <script>
     window.onload=init;
     function init() {
-        showhide(2);
+        showhide();
     }
-    function showhide(n) {
+    function showhide() {
         var box = document.getElementById("mock");
         box.className="active";
         var mock_manager = document.getElementById("mock_manager");
@@ -56,18 +56,6 @@
                     <div class="col-sm-2" style="padding-left: 0">
 						 <a href="{% url 'mock_add' %}"><li class="btn btn-success" ><b>添加Mock接口</b></li></a>
                   </div>
-
-{#                    <div class="col-sm-4" style="padding-right: 0;">#}
-{#                             <div class="input-group inline-group padding-right: 10px">#}
-{#                                <input type="text" class="form-control m-b " id="search_input" name="keyword" value="{{ keyword }}" placeholder="Search">#}
-{#                                <input type="text" style="display: none">#}
-{#                                <div class="input-group-btn ">#}
-{#                                    <button id='search_btn' href="{% url 'mock_index' %}?search=true" type="button" class="btn btn-primary "  onclick="change_info()">#}
-{#                                        <b>&nbsp;搜索&nbsp;</b>#}
-{#                                    </button>#}
-{#                                </div>#}
-{#                            </div>#}
-{#                        </div>#}
                 </div>
 
                 <!-- /.box-header -->
@@ -81,7 +69,7 @@
                                     <th>ID</th>
                                     <th>接口名称</th>
                                     <th>属组</th>
-{#                                    <th>请求方法</th>#}
+                                    <th>请求方法</th>
                                     <th>启用状态</th>
                                     <th>更新时间</th>
                                     <th>创建用户</th>
@@ -95,6 +83,7 @@
                                         <td class="index" data-value="{{ mock.id }}" ><a href="#"><li style="list-style-type:none" onclick="return tanchu(this.value)" value="{{ mock.id }}"> {{ forloop.counter }}</li></a></td>
                                         <td>{{ mock.name }}</td>
                                         <td>{{ mock.group }}</td>
+                                        <td>{{ mock.request_method | int2str}}</td>
                                         <td >
                                             {% ifequal mock.is_active 1 %}
                                                     <span class="label label-success">启用</span>

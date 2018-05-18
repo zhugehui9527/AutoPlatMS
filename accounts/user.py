@@ -23,15 +23,17 @@ def login(request):
     else:
         next_page = '/'
 
-    if next_page == '/accounts/logout':
+    if next_page == '/accounts/logout/':
         next_page = '/'
 
     if request.method == 'POST':
+        next_page = request.POST['next']
+
         form = LoginUserForm(request, data=request.POST)
         if form.is_valid():
             # 登录
             auth.login(request, user=form.get_user())
-            return HttpResponseRedirect(request.POST['next'])
+            return HttpResponseRedirect(next_page)
     else:
         form = LoginUserForm(request)
     kwargs = {

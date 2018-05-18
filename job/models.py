@@ -19,8 +19,9 @@ class EmailManager(models.Model):
     email_to = models.CharField(u'收件人', max_length=200)
     email_cc = models.CharField(u'抄送', max_length=400, blank=True)
     email_bcc = models.CharField(u'密送', max_length=400, blank=True)
-    eamil_config = models.ForeignKey(to=EmailConfig, verbose_name=u'发件人')
-    email_periodictask = models.OneToOneField(verbose_name=u'定时任务', to=PeriodicTask, related_name='periodictask_email')
+    eamil_config = models.ForeignKey(to=EmailConfig, verbose_name=u'发件人', on_delete=models.SET_NULL, null=True)
+    email_periodictask = models.OneToOneField(verbose_name=u'定时任务', to=PeriodicTask,
+                                              related_name='periodictask_email', on_delete=models.SET_NULL,null=True )
 
     def __str__(self):
         return self.email_user

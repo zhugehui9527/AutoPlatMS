@@ -112,7 +112,6 @@ def create_case_excel(export, case_id_all):
             response['Content-Disposition'] = "attachment; filename=" + file_name
             writer = csv.writer(response)
             writer.writerow([
-
                               str2gb(u'接口名称'), str2gb(u'用例组别'),
                               str2gb(u'协议'), str2gb(u'域名'),
                               str2gb(u'端口'), str2gb(u'路径'),
@@ -123,6 +122,7 @@ def create_case_excel(export, case_id_all):
                               str2gb(u'执行耗时'), str2gb(u'用例状态'),
                               str2gb(u'备注信息'), str2gb(u'代理地址'),
                               ])
+
             for c in case_find:
                 if c.request_method:
                     c_req = int(c.request_method)
@@ -150,16 +150,16 @@ def create_case_excel(export, case_id_all):
                 c_proxies = c.proxies or group_obj.proxies
 
                 writer.writerow([
-                                  str2gb(c.case_name), str2gb(c.case_group),
-                                  str2gb(c_protocol), str2gb(c_ip),
-                                  str2gb(c_port), str2gb(c_path),
-                                  str2gb(c_method),
-                                  str2gb(c.headers), str2gb(c.params),
-                                  str2gb(c_active), str2gb(c.update_time.strftime('%Y-%m-%d %H:%M:%S')),
-                                  str2gb(c.expect_res), str2gb(c.fact_res),
-                                  str2gb(c.duration), str2gb(c_status),
-                                  str2gb(c.remark), str2gb(c_proxies),
-                                  ])
+                    str2gb(c.case_name), str2gb(c.case_group),
+                    str2gb(c_protocol), str2gb(c_ip),
+                    str2gb(c_port), str2gb(c_path),
+                    str2gb(c_method),
+                    str2gb(c.headers), str2gb(c.params),
+                    str2gb(c_active), str2gb(c.update_time.strftime('%Y-%m-%d %H:%M:%S')),
+                    str2gb(c.expect_res), str2gb(c.fact_res),
+                    str2gb(c.duration), str2gb(c_status),
+                    str2gb(c.remark), str2gb(c_proxies),
+                ])
             return response
 
     # 导出全部
@@ -316,5 +316,9 @@ def case_info(request, ids):
     g = get_object(CaseGroup, id=group_id)
     protocol = obj.protocol or g.protocol
     ip = obj.ip or g.ip
-    port = obj.port or g.port
+    if protocol == 2:
+        port = obj.port or g.port or 443
+    elif protocol == 1:
+        port = obj.port or g.port or 80
+
     return render(request, 'case/case_info.html', locals())

@@ -28,12 +28,57 @@ def getSecond(time):
     time_f = str(int(time_h) * 3600 + int(time_m) * 60 + int(time_s)) + '.' + str(time_ms)
     return time_f
 
+
+def dict_sort(dict1, reverse=True):
+    '''
+    字典排序
+    :param dict1:
+    :param reverse: True 升序，False 降序
+    :return: dict
+    '''
+    a = sorted(dict1.items(), key=lambda x: x[0], reverse=reverse)
+    return dict(a)
+
+
+def cmp_dict(dict1, dict2):
+    '''
+    两个字典模糊匹配，判断是否包含
+    :param dict1: 实际结果
+    :param dict2: 预期结果
+    :return:
+    '''
+    # print("dict1 type:%s, %s" % (type(dict1), dict1))
+    # print("dict1 type:%s, %s" % (type(dict2), dict2))
+    x = set(dict1.keys())
+    y = set(dict2.keys())
+
+    x1 = dict1.values()
+    y1 = dict2.values()
+    len_x = len(x)
+    len_y = len(y)
+
+    if len_x >= len_y:
+        if (x & y == y):
+            for i in y1:
+                if i not in x1:
+                    return False
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
 def str2gb(args):
     '''
     :param args:
     :return: gb2312
     '''
-    return str(args).encode('gb2312')
+    import sys
+    if sys.version_info < (3, 0):
+        return str(args).encode('gb2312')
+    else:
+        return str(args)
 
 
 def get_object(model, **kwargs):
@@ -166,17 +211,21 @@ def get_group(request):
     return HttpResponse(status=403)
 
 
-def api_request(session, method, url, **kwargs):
+def api_request(session, method, url, params, headers, **kwargs):
     '''http 接口请求'''
     if method.lower() == 'post':
-        r = session.post(url, **kwargs)
+        if headers['content-type'] == 'application/json':
+            r = session.post(url=url, json=params, headers=headers, **kwargs)
+        else:
+            r = session.post(url=url, data=params, headers=headers, **kwargs)
     else:
-        r = session.get(url, **kwargs)
+        r = session.get(url=url, params=params, headers=headers, **kwargs)
     status_code = r.status_code
     response_message = r.content
     rheaders = r.headers
     relapsed = r.elapsed
-    return status_code, response_message, rheaders, relapsed
+    rurl = r.url
+    return status_code, response_message, rheaders, relapsed, rurl
 
 
 @login_required()
@@ -247,15 +296,14 @@ def run_one_case(case_id):
         protocol = case_model.protocol or case_group.protocol
         ip = case_model.ip or case_group.ip
 
-        if protocol == PROTOCOL[2][0]:  # PROTOCOL[2][0] == 2
+        if protocol == PROTOCOL[2][0]:  # https
             port = case_model.port or case_group.port or 443
             url = str(PROTOCOL[2][1]) + '://' + str(ip) + ':' + str(port) + str(path)
 
-        else:
+        else:  # http
             port = case_model.port or case_group.port or 80
             url = str(PROTOCOL[1][1]) + '://' + str(ip) + ':' + str(port) + str(path)
 
-        # content_type = case_model.content_type
         # case_is_active == 1 启用 ，2 禁用
         if case_is_active == 1:
             request_method_int = case_model.request_method
@@ -297,29 +345,31 @@ def run_one_case(case_id):
                 s = requests.session()
                 res = api_request(session=s, method=request_method, url=url, params=params, headers=headers,
                                   proxies=proxies)
-                res_status, res_response_message, res_rheaders, res_relapsed = res
+                res_status, res_response_message, res_rheaders, res_relapsed, res_url = res
+
                 case_model.headers = headers
                 case_model.duration = getSecond(res_relapsed)
                 case_model.response_code = res_status
                 case_model.response_header = res_rheaders
-                _expect_res = case_model.expect_res
+                case_model.response_url = res_url
 
                 res_response_json = str(res_response_message, encoding='utf-8')
                 # print('res_response_json：%s' % res_response_json)
-
                 # if isinstance(_expect_res, bytes) or isinstance(_expect_res, str) :
                 #     # 去掉字符串中的空格
                 #     _expect_res = str(_expect_res).replace(' ', '')
                 # 去除期望结果中的空字符以及实际响应中的空字符，并判断
                 try:
                     # 如果是json格式数据，则转化为dict，并排序
-                    _expect_res = sorted(json.loads(_expect_res))
-                    res_response_message = sorted(json.loads(res_response_json))
+                    _expect_res = json.loads(case_model.expect_res)
+                    res_response_message = json.loads(res_response_json)
+
                 except:
-                    pass
+                    _expect_res = case_model.expect_res
 
                 if isinstance(_expect_res, dict):
-                    if _expect_res == res_response_message or (not _expect_res):
+                    is_contain = cmp_dict(res_response_message, _expect_res)
+                    if is_contain or (not _expect_res):
                         case_model.traceback = None
                         case_model.status = 2
                     else:
@@ -327,10 +377,7 @@ def run_one_case(case_id):
                         case_model.traceback = u'断言失败，预期结果：%s' % _expect_res
                 elif isinstance(_expect_res, str):
 
-                    if isinstance(res_response_message, dict):
-                        res_response_json = str(json.loads(res_response_json))
-                    # print('_expect_res:%s' % _expect_res)
-                    if (_expect_res == res_response_json) or (_expect_res in res_response_json) or (not _expect_res):
+                    if (_expect_res in res_response_json) or (not _expect_res):
                         case_model.traceback = None
                         case_model.status = 2
                     else:

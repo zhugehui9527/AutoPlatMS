@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
-
+from djcelery.compat import python_2_unicode_compatible
 # Create your models here.
 
 _STATUS = (
@@ -29,6 +29,7 @@ IS_ACTIVE = (
 )
 
 
+@python_2_unicode_compatible
 class MockGroup(models.Model):
     '''mock 属组管理'''
     name = models.CharField('属组名称', max_length=200, unique=True)
@@ -39,13 +40,15 @@ class MockGroup(models.Model):
     # port = models.CharField(max_length=150, verbose_name="端口", null=True, blank=True)
     desc = models.TextField(U"描述", max_length=1600, null=True, blank=True)
 
-    def __unicode__(self):
-        '''美化group name，如果不添加 Mock.group 获取不到名字'''
-        return self.name
+    # def __unicode__(self):
+    #     '''美化group name，如果不添加 Mock.group 获取不到名字'''
+    #     return self.name
 
     def __str__(self):
         return self.name
 
+
+@python_2_unicode_compatible
 class Mock(models.Model):
     '''mock model'''
     name = models.CharField('接口名称', max_length=200, unique=True)
@@ -58,7 +61,8 @@ class Mock(models.Model):
     create_time = models.DateTimeField(u'添加时间', auto_now_add=True, editable=True)
     update_time = models.DateTimeField(u'更新时间', auto_now=True, null=True)
     duration = models.CharField(u'执行耗时', max_length=50, null=True, blank=True, default='0')
-    group = models.ForeignKey(MockGroup, on_delete=models.CASCADE, verbose_name=u"属组", null=True, error_messages={'required': u'请选择一个属组'},
+    group = models.ForeignKey(MockGroup, on_delete=models.CASCADE, verbose_name=u"属组", null=True,
+                              error_messages={'required': u'请选择一个属组'},
                               ) # 级连删除on_delete=models.CASCADE
     is_active = models.IntegerField(u"启用状态", choices=IS_ACTIVE, default=1)
     remark = models.TextField(u'备注信息', max_length=2048, null=True, blank=True)
@@ -67,15 +71,15 @@ class Mock(models.Model):
     mock_path = models.CharField('Mock地址', max_length=240, null=True, blank=True)
 
 
-    def __unicode__(self):
-        return self.name
+    # def __unicode__(self):
+    #     return self.name
 
     def __str__(self):
         return self.name
 
-    class Meta:
-        '''按照用例的名字进行排序,倒序只需要加 -'''
-        ordering = ['-update_time']
+    # class Meta:
+    #     '''按照用例的名字进行排序,倒序只需要加 -'''
+    #     ordering = ['-update_time']
 
 
 

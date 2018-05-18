@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from djcelery.compat import python_2_unicode_compatible
 # Create your models here.
 
 
@@ -22,13 +23,11 @@ REQUEST_METHOD = (
     (2, 'POST'),
 )
 
-
 PROTOCOL = (
     (0, None),
     (1, 'http'),
     (2, 'https'),
 )
-
 
 RESPONSE_TYPE = (
     (1, 'json'),
@@ -37,7 +36,6 @@ RESPONSE_TYPE = (
     (4, 'html'),
 
 )
-
 
 RESPONSE_STATUS = (
     (1, u"未执行"),
@@ -51,6 +49,8 @@ IS_ACTIVE = (
     (2, u"禁用"),
 )
 
+
+@python_2_unicode_compatible
 class CaseGroup(models.Model):
     '''定义用例的组别'''
     # unique 唯一，不允许重复
@@ -67,8 +67,8 @@ class CaseGroup(models.Model):
     # status = models.IntegerField(u"用例状态", choices=RESPONSE_STATUS, default=1)
     # result = models.OneToOneField(GroupResult)
 
-    def __unicode__(self):
-        return self.name
+    # def __unicode__(self):
+    #     return self.name
 
     def __str__(self):
         return self.name
@@ -82,6 +82,7 @@ class CaseGroup(models.Model):
     #     ordering = ['add_time']
     #     # verbose_name = '案例集合'
     #     # db_table = 'casegroup'
+
 
 
 class GroupResult(models.Model):
@@ -101,7 +102,7 @@ class GroupResult(models.Model):
 
     # class Meta:
     #     abstract = True
-    # def __unicode__(self):
+    # def __str__(self):
     #     return self.group.name
 
     # class Meta:
@@ -115,6 +116,7 @@ class GroupResult(models.Model):
 #  python2 manage.py migrate case --fake
 # --fake 的含义是不执行该迁移脚本但是标记该脚本已经被执行过
 
+@python_2_unicode_compatible
 class Case(models.Model):
     '''添加一条用例'''
     # csv文件表头名字科通通过verbose_name获取， 数据可以通过queryset语句来获取, Admin中显示的字段名称
@@ -136,6 +138,7 @@ class Case(models.Model):
     expect_res = models.TextField(u'预期结果', max_length=2048, null=True, blank=True)
     response_code = models.TextField(u'响应码', max_length=50, null=True, blank=True)
     response_header = models.TextField(u'响应头', max_length=1600, null=True, blank=True)
+    response_url = models.CharField(u'响应URL', max_length=200, null=True, blank=True)
     fact_res = models.TextField(u'结果响应', max_length=2048, null=True, blank=True)
     duration = models.CharField(u'执行耗时', max_length=50, null=True, blank=True, default='0')
     status = models.IntegerField(u"用例状态", choices=RESPONSE_STATUS, default=1)
@@ -146,8 +149,8 @@ class Case(models.Model):
     traceback = models.TextField(u'异常信息', max_length=2048, null=True, blank=True)
 
     # for python2
-    def __unicode__(self):
-        return self.case_name
+    # def __unicode__(self):
+    #     return self.case_name
 
     # for python3
     def __str__(self):

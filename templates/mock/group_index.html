@@ -6,13 +6,13 @@
 <script>
     window.onload=init;
     function init() {
-        showhide(2);
+        showhide();
     }
-    function showhide(n) {
-{#        var box = document.getElementById("case");#}
-{#        box.className="active";#}
+    function showhide() {
         var box = document.getElementById("group");
         box.className="active";
+        var mock_manager = document.getElementById("mock_manager");
+        mock_manager.className="active";
     }
 </script>
 

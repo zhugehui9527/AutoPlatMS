@@ -51,7 +51,7 @@ urlpatterns = [
     url(r'^jobs/', include('job.urls')),
     url(r'^config/', include('config.urls')),
     url(r'^mock/', include('mocks.urls')),
-    url(r'^api-auth/', include('rest_framework.urls')),
+    url(r'^api-auth/', include('rest_framework.urls'), name='rest_framework'),
     url(r'^rest/', include(router.urls)),
 
 

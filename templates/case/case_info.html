@@ -1,5 +1,17 @@
 {% extends 'base.html' %}
 {% block content %}
+<script>
+    window.onload=init;
+    function init() {
+        showhide();
+    }
+    function showhide() {
+        var box = document.getElementById("case");
+        box.className="active";
+        var case_manager = document.getElementById("case_manager");
+        case_manager.className="active";
+    }
+</script>
 <div class="content-wrapper">
     <section class="content">
 
@@ -45,10 +57,7 @@
 
               <div class="form-group">
                   <label for="ip" class="control-label">接口域名:</label>
-
-{#                  <div class="divcss5">#}
                       {{ ip }}
-{#                  </div>#}
                 </div>
 
               <div class="form-group">
@@ -65,6 +74,12 @@
 {#                  <div class="divcss5">#}
                       {{ obj.path }}
 {#                  </div>#}
+                </div>
+             <div class="form-group">
+                  <label for="response_url" class="control-label">请求URL:</label>
+{#                  <div class="divcss5">#}
+                       {{ obj.response_url }}
+{#                    </div>#}
                 </div>
 
                 <div class="form-group">
@@ -96,30 +111,31 @@
                 </div>
                   <div class="form-group">
                       <label for="status" class="control-label">用例状态:</label>
-{#                     <div  class="divcss5">#}
+
                          {% ifequal obj.status 1 %}
-                          未执行
+                           <span class="norun">未执行</span>
                        {% endifequal %}
                         {% ifequal obj.status 2 %}
-                          成功
+                          <span class="runpass">成功</span>
                        {% endifequal %}
                         {% ifequal obj.status 3 %}
-                          失败
+                          <span class="runfail">失败</span>
                        {% endifequal %}
                      {% ifequal obj.status 4 %}
-                          错误
+                          <span class="runerror">错误</span>
                        {% endifequal %}
-{#                         </div>#}
+
 
                 </div>
                   <div class="form-group">
                   <label for="is_active" class="control-label">是否禁用:</label>
 {#                  <div class="divcss5">#}
                       {% ifequal obj.is_active 1 %}
-                          启用
+                          <span class="runpass">启用</span>
                        {% endifequal %}
                     {% ifequal obj.is_active 2 %}
-                          禁用
+                        <span class="runfail">禁用</span>
+
                        {% endifequal %}
 
 {#                    </div>#}
@@ -297,8 +313,8 @@
 
                               <div class="tab-content">
                                       <div id="traceback" class="pre-scrollable">
+                                                <span class="runerror">{{ obj.traceback }}</span>
 
-                                                {{ obj.traceback }}
                                          </div>
                               </div>
                           </div>
@@ -344,6 +360,7 @@
                        {{ obj.response_code }}
 {#                    </div>#}
                 </div>
+
 
                <div class="form-group">
                   <label for="proxies" class="control-label">代理:</label>

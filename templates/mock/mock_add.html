@@ -7,18 +7,14 @@
 
     window.onload=init;
     function init() {
-         var id_params = document.getElementById("id_params");
-{#        id_params.style.display='none';#}
-        var id_headers = document.getElementById("id_headers");
-{#        id_headers.style.display='none';#}
+        showhide();
+
     }
-    function showhide(byid) {
-        var id_params = document.getElementById(byid);
-        if (id_params.style.display==''){
-            id_params.style.display='none';
-        }else{
-            id_params.style.display='';
-        }
+    function showhide() {
+        var box = document.getElementById("mock");
+        box.className="active";
+        var mock_manager = document.getElementById("mock_manager");
+        mock_manager.className="active";
     }
 
 

@@ -3,14 +3,31 @@ from django import template
 register = template.Library()
 
 
-@register.filter(name='int2str')
-def int2str(value):
+
+@register.filter(name='bool2str')
+def bool2str(isbool):
     '''
-    int 转换为 str
+    bool 转换为 str
     :param value:
     :return:
     '''
-    return str(value)
+    if isbool:
+        return '是'
+    else:
+        return '否'
+
+
+@register.filter(name='int2str')
+def int2str(value):
+    '''
+    request method
+    :param value:
+    :return:
+    '''
+    if value == 1:
+        return 'GET'
+    elif value == 2:
+        return 'POST'
 
 
 @register.filter(name='res_splict')

@@ -1,5 +1,22 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load mytags %}
+<script>
+
+    window.onload=init;
+    function init() {
+        showhide();
+
+    }
+    function showhide() {
+        var box = document.getElementById("mock");
+        box.className="active";
+        var mock_manager = document.getElementById("mock_manager");
+        mock_manager.className="active";
+    }
+
+
+</script>
 <div class="content-wrapper">
     <section class="content">
 
@@ -30,7 +47,6 @@
 
                       <div class="divcss5">
                           <a href="{{ m.mock_path }}">{{ m.mock_path }}</a>
-    {#                      {{ obj.mock_path }}#}
                       </div>
                     </div>
 
@@ -42,6 +58,14 @@
                       </div>
                     </div>
 
+                    <div class="form-group">
+                      <label for="path" class="control-label">请求方法:</label>
+
+                      <div class="divcss5">
+                          {{ m.request_method | int2str }}
+                      </div>
+                    </div>
+
 
                   <div class="form-group">
                       <label for="response_status" class="control-label">响应码:</label>
@@ -50,6 +74,45 @@
                         {{ response_code }}
                       </div>
                     </div>
+
+
+                    <div class="form-group" >
+
+                          <label for="param" class="control-label">请求参数 :</label>
+                         <button type="button" class="btn btn-box-tool" data-target="#collapse_param" data-toggle="collapse">
+                         点击展开查看详情
+                         </button>
+                        <div id="collapse_param" class="collapse">
+                        <div class="nav-tabs-custom content">
+                          <ul class="nav nav-tabs pull-right">
+
+                              <li class>
+                                  <a href="#tab_2-1" data-toggle="tab" id="json_format" aria-expanded="true">JSON格式化</a>
+                              </li>
+                              <li class="active">
+                                  <a href="#tab_2-2" data-toggle="tab" id="json_format" aria-expanded="false">原始值</a>
+                              </li>
+                          </ul>
+
+
+                          <div class="tab-content">
+                                  <div class="tab-pane" id="tab_2-1">
+                                      <pre id="param" class="pre-scrollable">
+
+                                            {{ param }}
+                                     </pre>
+                                  </div>
+                                    <div class="tab-pane nojson active" id="tab_2-2" >
+                                      <div id="param" class="pre-scrollable">
+
+                                            {{ param }}
+                                     </div>
+                                   </div>
+                          </div>
+                      </div>
+                </div>
+
+                  </div>
 
 
                   <div class="form-group" >
@@ -125,7 +188,7 @@
 
             </form>
 
-                <input type="hidden" name="id" value="{{ obj.id }}">
+{#                <input type="hidden" name="id" value="{{ obj.id }}">#}
 {#              </div>#}
               <!-- /.box-body -->
               <div align="center" >
@@ -179,18 +242,17 @@ function jsonformater(str, replacestr1, replacestr2, ele_id) {
     jsonformater(expect_res, replacestr1, replacestr2, ele_id);
 </script>
 
-{#<script type="text/javascript">#}
-{#    var ele_id = 'params';#}
-{#    var params = "{{ obj.params }}";#}
-{#    var replacestr1 = /&quot;/g;#}
-{#    var replacestr2 = '"';#}
-{#    jsonformater(params, replacestr1, replacestr2, ele_id);#}
-{#</script>#}
+<script type="text/javascript">
+    var ele_id = 'param';
+    var params = "{{ param }}";
+    var replacestr1 = /&#39;/g;
+    var replacestr2 = '"';
+    jsonformater(params, replacestr1, replacestr2, ele_id);
+</script>
 
 <script type="text/javascript">
     var ele_id = 'headers';
     var headers = "{{ response_headers }}";
-{#    console.log(headers);#}
     var replacestr1 = /&#39;/g;
     var replacestr2 = '"';
     jsonformater(headers, replacestr1, replacestr2, ele_id);

@@ -72,3 +72,19 @@ div.dataTables_wrapper div.dataTables_paginate{
     white-space: nowrap;
     text-align: left;
 }
+
+.runerror{
+    color:#ce563f;
+}
+
+.runfail{
+    color:#c87f0a;
+}
+
+.runpass{
+    color:#00a65a;
+}
+
+.norun{
+    color:#4b646f;
+}

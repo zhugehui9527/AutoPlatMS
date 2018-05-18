@@ -3,32 +3,35 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, Permission
-
+from djcelery.compat import python_2_unicode_compatible
 # Create your models here.
 
 
+@python_2_unicode_compatible
 class PermissionList(models.Model):
     name = models.CharField(max_length=64)
     url = models.CharField(max_length=255)
 
-    def __unicode__(self):
-        return '%s(%s)' % (self.name, self.url)
+    # def __unicode__(self):
+    #     return '%s(%s)' % (self.name, self.url)
 
     def __str__(self):
         return '%s(%s)' % (self.name, self.url)
 
 
+@python_2_unicode_compatible
 class RoleList(models.Model):
     name = models.CharField(max_length=64)
     # 如果关联的model定义在前面可以直接引用(如 PermissionList),
     # 否则 需要填写未定义模块的名字(如 'PermissionList')
     permission = models.ManyToManyField(PermissionList, blank=True)
 
-    def __unicode__(self):
-        return self.name
+    # def __unicode__(self):
+    #     return self.name
 
     def __str__(self):
         return self.name
+
 
 class UserManger(BaseUserManager):
     def create_user(self, email, username, password=None):

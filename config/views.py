@@ -21,6 +21,7 @@ from django.template.context import RequestContext
 
 # Create your views here.
 
+
 def get_token(request):
     if request.method == 'POST':
         new_token = get_user_model().objects.\
@@ -39,8 +40,10 @@ def index(request):
     dirs = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     config = ConfigParser.ConfigParser()
     all_level = log_level_dic
+    tips = ''
+    display_control = 'none'
     with open(dirs+'/AutoPlatMS.conf', 'r') as cfgfile:
-        config.readfp(cfgfile)
+        config.read_file(cfgfile)
         engine = config.get('db', 'engine')
         host = config.get('db', 'host')
         port = config.get('db', 'port')
@@ -48,8 +51,8 @@ def index(request):
         password = config.get('db', 'password')
         database = config.get('db', 'database')
         token = config.get('token', 'token')
-        log_path = config.get('log', 'log_path')
-        log_level = config.get('log', 'log_level')
+        # log_path = config.get('log', 'log_path')
+        # log_level = config.get('log', 'log_level')
 
     return render(request, 'config/index.html', locals())
 
@@ -66,8 +69,8 @@ def config_save(request):
         password = request.POST.get('password')
         database = request.POST.get('database')
         token = request.POST.get('token')
-        log_path = request.POST.get('log_path')
-        log_level = request.POST.get('log_level')
+        # log_path = request.POST.get('log_path')
+        # log_level = request.POST.get('log_level')
 
         config = ConfigParser.RawConfigParser()
         dirs = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -80,16 +83,17 @@ def config_save(request):
         config.set('db', 'database', database)
         config.add_section('token')
         config.set('token', 'token', token)
-        config.add_section('log')
-        config.set('log', 'log_path', log_path)
-        config.set('log', 'log_level', log_level)
+        # config.add_section('log')
+        # config.set('log', 'log_path', log_path)
+        # config.set('log', 'log_level', log_level)
         tips = u'保存成功！'
         display_control = ''
         conf_path = dirs + '/AutoPlatMS.conf'
-        with open(conf_path, 'wb') as cfgfile:
+        # print('conf_path:%s' % conf_path)
+        with open(conf_path, 'w') as cfgfile:
             config.write(cfgfile)
         with open(conf_path, 'r') as cfgfile:
-            config.readfp(cfgfile)
+            config.read_file(cfgfile)
             engine = config.get('db', 'engine')
             host = config.get('db', 'host')
             port = config.get('db', 'port')
@@ -97,20 +101,21 @@ def config_save(request):
             password = config.get('db', 'password')
             database = config.get('db', 'database')
             token = config.get('token', 'token')
-            log_path = config.get('log', 'log_path')
+            # log_path = config.get('log', 'log_path')
     else:
         display_control = 'none'
     return render(request, 'config/index.html', locals())
+
 
 def get_dir(args):
     config = ConfigParser.RawConfigParser()
     dirs = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     conf_path = dirs + '/AutoPlatMS.conf'
     with open(conf_path, 'r') as cfgfile:
-        config.readfp(cfgfile)
+        config.read_file(cfgfile)
         token = config.get('token', 'token')
-        log_path = config.get('log', 'log_path')
-        log_level = config.get('log', 'log_level')
+        # log_path = config.get('log', 'log_path')
+        # log_level = config.get('log', 'log_level')
 
     # 根据传入参数返回变量以获取配置，返回变量名与参数名相同
     if args:
@@ -176,6 +181,7 @@ def email_edit(request, ids):
     else:
         form = EmailConfigForm(instance=e_obj)
         display_control = "none"
+        tips = ''
 
     return render(request, 'config/email_edit.html', locals())
 

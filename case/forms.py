@@ -10,7 +10,7 @@ class CaseForm(forms.ModelForm):
         ''' 模型表单 '''
         model = Case
         # exclude 除了这些不用渲染
-        exclude = ("id", "add_time", "status", "duration", "fact_res", "NO", "traceback")
+        exclude = ("id", "add_time", "status", "duration", "fact_res", "NO", "traceback", "response_url")
         # widgets 用来渲染成HTML元素的工具
         widgets = {
             'path': TextInput(
@@ -30,7 +30,7 @@ class CaseForm(forms.ModelForm):
             # 'add_time': DateTimeInput(attrs={'class': 'form-control', 'style': 'width:530px;'}),
             # 'update_time': DateTimeInput(attrs={'class': 'form-control', 'style': 'width:530px;'}),
             'expect_res': Textarea(attrs={'class': 'form-control', 'style': 'width:530px;', 'placeholder': u'请填写预期结果断言'}),
-            # 'duration': TextInput(attrs={'class': 'form-control', 'style': 'width:100px;'}),
+            # 'response_url': TextInput(attrs={'class': 'form-control', 'style': 'width:530px;'}),
             'fact_res': Textarea(attrs={'class': 'form-control', 'style': 'width:530px;', 'readonly': True}),
             'request_type': Select(attrs={'class': 'form-control', 'style': 'width:530px;'}),
             'remark': Textarea(attrs={'class': 'form-control', 'style': 'width:530px;', 'placeholder': u'请填写备注信息'}),
@@ -56,8 +56,12 @@ class GroupForm(forms.ModelForm):
         exclude = ("id", 'update_time', 'add_time', 'duration', 'status' )
         widgets = {
             'name': TextInput(
-                attrs={'class': 'form-control', 'style': 'width:480px',
-                       'placeholder': u'请填写组名'}),
+                attrs={'class': 'form-control',
+                       'style': 'width:480px',
+                       'placeholder': u'请填写组名',
+                       # 'data-toggle': 'tooltip',
+                       # 'title': '组名',
+                       }),
             'desc': TextInput(
                 attrs={'class': 'form-control', 'style': 'width:480px',
                        'placeholder': u'请填写描述'}),

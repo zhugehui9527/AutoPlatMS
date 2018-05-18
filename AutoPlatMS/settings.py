@@ -33,7 +33,7 @@ SECRET_KEY = 'g2b0(p=0e%kvqqha#gmqu!u_o0u8#vlhpzzinh5jr6(2@g0p-h'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', ]
+ALLOWED_HOSTS = []
 
 
 
@@ -393,16 +393,16 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['default', 'console'],
-            'level': 'INFO',
+            'level': 'DEBUG',
             'propagate': False # 是否继承父类的log信息
         },
         'AutoPlatMS.app': {
             'handlers': ['default', 'console'],
             'level': 'DEBUG',
-            'propagate': True
+            'propagate': False
         },
         'django.request': {
-            'handlers': ['request_handler'],
+            'handlers': ['request_handler', 'console'],
             'level': 'DEBUG',
             'propagate': False
         },
