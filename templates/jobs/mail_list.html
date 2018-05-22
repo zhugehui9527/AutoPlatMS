@@ -14,6 +14,8 @@
     function showhide(n) {
         var box = document.getElementById("job_email_list");
         box.className="active";
+        var job_manager = document.getElementById("job_manager");
+        job_manager.className="active";
     }
 </script>
 
@@ -42,6 +44,7 @@
                             <th>禁用</th>
                             <th>主题</th>
                             <th>收件人</th>
+                             <th>定时任务</th>
 
                             <th class="nosort">操作</th>
                         </tr>
@@ -59,7 +62,7 @@
 
                                     <td>{{ i.email_subiect }} </td>
                                     <td>{{ i.email_to }} </td>
-
+                                    <td>{{ i.email_periodictask }} </td>
 
                                     <td class="nosort">
                                         <a href="{% url "job_email_edit" i.id %}"><span class="btn btn-sm btn-info">编辑</span></a>

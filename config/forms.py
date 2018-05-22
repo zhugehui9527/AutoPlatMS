@@ -11,7 +11,6 @@ from .models import EmailConfig
 class EmailConfigForm(forms.ModelForm):
     '''邮件管理表单'''
     def clean(self):
-
         cleaned_data = super(EmailConfigForm, self).clean()
         value = cleaned_data.get('email_user')
         try:
@@ -25,8 +24,19 @@ class EmailConfigForm(forms.ModelForm):
         model = EmailConfig
         exclude = ('id',)
         widgets = {
-            u'邮箱账号': forms.EmailInput(attrs={'class': 'form-control', 'style': 'width:450px;',}),
-            u'邮箱密码': forms.PasswordInput(attrs={'class': 'form-control', 'style': 'width:450px;'}),
-            u'邮箱域名': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;',}),
-            u'邮箱端口': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;', }),
+            u'邮箱账号': forms.EmailInput(attrs={'class': 'form-control',
+                                             'style': 'width:450px;',
+                                             'placeholder': '请输入邮箱账号',
+                                             },
+                                      ),
+            u'邮箱密码': forms.PasswordInput(attrs={'class': 'form-control',
+                                                'style': 'width:450px;',
+                                                'placeholder': '请输入邮箱密码',
+                                                }),
+            u'邮箱域名': forms.TextInput(attrs={'class': 'form-control',
+                                            'style': 'width:450px;',
+                                            'placeholder': '请输入邮箱域名比如：smtp.qq.com',
+                                            }),
+            u'邮箱端口': forms.TextInput(attrs={'class': 'form-control',
+                                            'style': 'width:450px;', }),
         }

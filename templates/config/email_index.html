@@ -1,16 +1,18 @@
 {% extends 'base.html' %}
 {#base.html 中的block content 中的内容将被重写#}
 {% block content %}
-    <script>
-        window.onload=init;
-        function init() {
-            showhide(1);
-        }
-        function showhide() {
-            var box = document.getElementById('mail');
-            box.className='active';
-        }
-    </script>
+<script>
+    window.onload=init;
+    function init() {
+        showhide(2);
+    }
+    function showhide(n) {
+        var box = document.getElementById("mail");
+        box.className="active";
+        var box1 = document.getElementById("config_manager");
+        box1.className="active";
+    }
+</script>
     <!-- Main content -->
     <div class="content-wrapper">
         <!-- content header (page header) -->

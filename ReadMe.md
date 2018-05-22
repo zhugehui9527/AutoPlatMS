@@ -109,6 +109,8 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'
 ![](./statics/images/case_info.png)
 
 ##### mock运行流程介绍
+> mock 功能主要是对http协议的接口进行模拟，设置预期响应，从而进行访问。
+
 1、登录后进入**Mock管理>>属组管理**页面，先添加属组
 
 ![](./statics/images/mockgroup_add.png)
@@ -126,5 +128,108 @@ CELERY_BROKER_URL = 'redis://localhost:6379/0'
 ![](./statics/images/mock_info.png)
 
 ##### 定时任务
+> 定时任务模块，可以使用后台的定时触发规则来进行接口的定时构建，从而实现自动化，并可在构建失败发送邮件告警，查看执行结果。
 
-1、在添加接口用例后，即可进行定时任务创建
+1、在添加接口用例后，即可进行定时任务创建，先添加定时间隔或者定时周期，二选一
+1)定时间隔添加
+```
+间隔单位：毫秒，秒，分钟，小时，天
+```
+
+![](./statics/images/interval_add.png)
+
+2）定时间隔列表
+
+![](./statics/images/interval_list.png)
+
+3) 定时周期添加
+
+```
+   * : 代表任意1, 当定时周期都为*， 表示每隔一分钟;
+   */3: 每隔3, 比如 Minute: */3 表示每隔三分钟;
+	如果为具体数字则表示当前设定时间, 比如：Hour：9，表示早上9点;
+```
+
+![](./statics/images/crontab_add.png)
+
+4）定时周期列表
+
+![](./statics/images/crontab_list.png)
+
+2、定时任务添加
+
+```
+1）模板名称可以直接填写已经注册的模板，
+   也可以不填写，在下面选择模板处选择即可。
+2）定时周期和定时间隔，二选一即可。
+3）任务参数和任务指令根据实际task要求去传值，
+   比如运行用例集模板runCaseGroup，
+   直接传任务参数：["组1"]，任务指令默认即可。
+```
+
+![](./statics/images/job_add.png)
+
+3、定时任务列表
+
+```
+1) 任务状态栏可以查看当前任务状态；
+2）最新报告在定时任务运行完成后方可查看
+```
+
+![](./statics/images/job_list.png)
+
+4、任务结果可以查看每次定时任务的结果详情
+
+![](./statics/images/job_result_list.png)
+
+5、定时构建失败后发送邮件
+
+1）系统配置-邮件管理-添加发件人
+
+![](./statics/images/config_mail_add.png)
+
+2）系统配置-邮件管理-发件人列表
+
+![](./statics/images/config_mail_list.png)
+
+3) 定时任务-邮件管理-添加邮件
+
+```
+构建失败发送邮件可以选择绑定到具体的定时任务和发件人
+```
+
+![](./statics/images/job_mail_add.png)
+
+4) 定时任务-邮件管理-邮件列表
+
+![](./statics/images/job_mail_list.png)
+
+##### 用户管理
+
+> 通过用户管理模块，可以添加使用此平台的用户，区分角色：管理员/普通用户，通过给不同角色分配权限，可以限制角色对某些页面的访问
+
+1、添加用户
+
+![](./statics/images/user_add.png)
+
+2、用户列表
+
+![](./statics/images/user_list.png)
+
+3、添加角色
+
+![](./statics/images/role_add.png)
+
+4、角色列表
+
+![](./statics/images/role_list.png)
+
+5、添加权限
+
+![](./statics/images/perm_add.png)
+
+6、权限列表
+
+![](./statics/images/perm_list.png)
+
+

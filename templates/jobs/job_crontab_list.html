@@ -1,6 +1,18 @@
 {% extends 'base.html' %}
 {% block self_head_css_js %}
     <script src="/statics/layer/layer.js"></script>
+    <script>
+    window.onload=init;
+    function init() {
+        showhide(2);
+    }
+    function showhide(n) {
+        var box = document.getElementById("job_list");
+        box.className="active";
+        var job_manager = document.getElementById("job_manager");
+        job_manager.className="active";
+    }
+    </script>
 {% endblock %}
 {% block content %}
 

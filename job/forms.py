@@ -23,6 +23,7 @@ try:
 except ImportError:
     from django.utils.encoding import force_unicode as force_text
 
+
 class TaskSelectWidget(Select):
     '''任务选择'''
     celery_app = current_app
@@ -81,7 +82,8 @@ class PeriodicTaskForm(forms.ModelForm):
         label=_('模板名称'),
         required=False,
         max_length=200,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;',
+                                      'placeholder':' 可以直接在下面<选择模板>中选择后自动填充'})
     )
 
     kwargs = forms.CharField(
@@ -171,8 +173,10 @@ class EmailMangerForm(forms.ModelForm):
         model = EmailManager
         exclude = ('id',)
         widgets = {
-            'email_subiect': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;'}),
-            'email_message': forms.Textarea(attrs={'class': 'form-control', 'style': 'width:450px;'}),
+            'email_subiect': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;',
+                                                    'placeholder': '不填写则使用默认标题'}),
+            'email_message': forms.Textarea(attrs={'class': 'form-control', 'style': 'width:450px;',
+                                                   'placeholder': '不填写则使用默认内容'}),
             'email_to': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;',
                                                'placeholder': '多个收件人逗号隔开'}),
             'email_cc': forms.TextInput(attrs={'class': 'form-control', 'style': 'width:450px;',
